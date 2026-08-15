@@ -400,7 +400,7 @@
       </h1>
       <p>きみだけの ゲームを かんがえる シートだよ。おもいついたことを じゆうに かいてね。</p>
     </div>
-    <button class="print-btn" onclick="window.print()" type="button">
+    <button class="print-btn" type="button">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8"/><path d="M6 17H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-2"/></svg>
       いんさつする
     </button>
@@ -411,7 +411,7 @@
     <label>ひづけ <input type="date"></label>
   </div>
 
-  <p class="intro-note">ぜんぶ うめなくても だいじょうぶ。かんがえた ところから かいてね。まよったら、れい(例)を みてね。</p>
+  <p class="intro-note">ぜんぶ うめなくても だいじょうぶ。かんがえた ところから かいてね。まよったら、れいを みてね。</p>
 
   <section class="step">
     <div class="step-head"><span class="step-num">1</span><span class="step-label">STEP 1</span></div>
@@ -422,33 +422,39 @@
 
   <section class="step">
     <div class="step-head"><span class="step-num">2</span><span class="step-label">STEP 2</span></div>
-    <h2>おはなし・<ruby>主人公<rt>しゅじんこう</rt></ruby></h2>
+    <h2>キャラクター・ストーリー</h2>
     <p class="hint">れい)ねこが おうちに かえる おはなし。しゅじんこうは ちゃいろい ねこ。</p>
-    <textarea class="line" rows="3" aria-label="おはなしと主人公"></textarea>
+    <textarea class="line" rows="3" aria-label="キャラクターとストーリー"></textarea>
   </section>
 
   <section class="step">
     <div class="step-head"><span class="step-num">3</span><span class="step-label">STEP 3</span></div>
     <h2>あそびかた</h2>
-    <p class="hint">あう ものに ○を つけよう(いくつでも いいよ)</p>
-    <fieldset>
-      <legend class="sr-only" style="position:absolute;left:-9999px;">あそびかたのしゅるい</legend>
-      <div class="choices">
-        <label><input type="checkbox"> にげる・よける</label>
-        <label><input type="checkbox"> たたかう</label>
-        <label><input type="checkbox"> クイズ</label>
-        <label><input type="checkbox"> パズル</label>
-        <label><input type="checkbox"> はしる・ジャンプ</label>
-        <span class="other-line">そのた: <input type="text" placeholder="かいてね"></span>
+    <p class="hint">どんな あそびかたか、えで せつめいしてみよう</p>
+    <div class="draw-widget">
+      <div class="screen-frame">
+        <canvas class="draw-canvas" width="800" height="450" aria-label="あそびかたの え"></canvas>
       </div>
-    </fieldset>
+      <div class="draw-tools">
+        <button class="swatch" style="background:#2a2840" data-color="#2a2840" aria-pressed="true" aria-label="くろ"></button>
+        <button class="swatch" style="background:#ff6b35" data-color="#ff6b35" aria-label="オレンジ"></button>
+        <button class="swatch" style="background:#1f9d8f" data-color="#1f9d8f" aria-label="みずいろ"></button>
+        <button class="swatch" style="background:#ffc94a" data-color="#ffc94a" aria-label="きいろ"></button>
+        <button class="swatch" style="background:#a34fd6" data-color="#a34fd6" aria-label="むらさき"></button>
+        <div class="tool-sep"></div>
+        <button class="tool-btn" data-size="3" aria-pressed="true" type="button">ほそい</button>
+        <button class="tool-btn" data-size="9" type="button">ふとい</button>
+        <div class="tool-sep"></div>
+        <button class="tool-btn danger clear-btn" type="button">けす</button>
+      </div>
+    </div>
   </section>
 
   <section class="step">
     <div class="step-head"><span class="step-num">4</span><span class="step-label">STEP 4</span></div>
-    <h2><ruby>操作<rt>そうさ</rt></ruby>のしかた</h2>
+    <h2>うごかしかた</h2>
     <p class="hint">れい)→キーを おすと まえに すすむ。スペースキーで ジャンプする。</p>
-    <textarea class="line" rows="3" aria-label="操作のしかた"></textarea>
+    <textarea class="line" rows="3" aria-label="うごかしかたの せつめい"></textarea>
   </section>
 
   <section class="step">
@@ -485,20 +491,22 @@
     <div class="step-head"><span class="step-num">8</span><span class="step-label">STEP 8</span></div>
     <h2><ruby>画面<rt>がめん</rt></ruby>の え</h2>
     <p class="hint">マウスや ゆびで、がめんに なにが みえるか かいてみよう</p>
-    <div class="screen-frame">
-      <canvas id="drawCanvas" width="800" height="500"></canvas>
-    </div>
-    <div class="draw-tools">
-      <button class="swatch" style="background:#2a2840" data-color="#2a2840" aria-pressed="true" aria-label="くろ"></button>
-      <button class="swatch" style="background:#ff6b35" data-color="#ff6b35" aria-label="オレンジ"></button>
-      <button class="swatch" style="background:#1f9d8f" data-color="#1f9d8f" aria-label="みずいろ"></button>
-      <button class="swatch" style="background:#ffc94a" data-color="#ffc94a" aria-label="きいろ"></button>
-      <button class="swatch" style="background:#a34fd6" data-color="#a34fd6" aria-label="むらさき"></button>
-      <div class="tool-sep"></div>
-      <button class="tool-btn" data-size="3" aria-pressed="true" type="button">ほそい</button>
-      <button class="tool-btn" data-size="9" type="button">ふとい</button>
-      <div class="tool-sep"></div>
-      <button class="tool-btn danger" id="clearBtn" type="button">けす</button>
+    <div class="draw-widget">
+      <div class="screen-frame">
+        <canvas class="draw-canvas" width="800" height="500" aria-label="がめんの え"></canvas>
+      </div>
+      <div class="draw-tools">
+        <button class="swatch" style="background:#2a2840" data-color="#2a2840" aria-pressed="true" aria-label="くろ"></button>
+        <button class="swatch" style="background:#ff6b35" data-color="#ff6b35" aria-label="オレンジ"></button>
+        <button class="swatch" style="background:#1f9d8f" data-color="#1f9d8f" aria-label="みずいろ"></button>
+        <button class="swatch" style="background:#ffc94a" data-color="#ffc94a" aria-label="きいろ"></button>
+        <button class="swatch" style="background:#a34fd6" data-color="#a34fd6" aria-label="むらさき"></button>
+        <div class="tool-sep"></div>
+        <button class="tool-btn" data-size="3" aria-pressed="true" type="button">ほそい</button>
+        <button class="tool-btn" data-size="9" type="button">ふとい</button>
+        <div class="tool-sep"></div>
+        <button class="tool-btn danger clear-btn" type="button">けす</button>
+      </div>
     </div>
   </section>
 
@@ -514,61 +522,76 @@
 
 <script>
 (function () {
-  var canvas = document.getElementById('drawCanvas');
-  var ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-
-  var drawing = false;
-  var color = '#2a2840';
-  var size = 3;
-
-  function pos(e) {
-    var rect = canvas.getBoundingClientRect();
-    var scaleX = canvas.width / rect.width;
-    var scaleY = canvas.height / rect.height;
-    return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
-  }
-
-  canvas.addEventListener('pointerdown', function (e) {
-    drawing = true;
-    canvas.setPointerCapture(e.pointerId);
-    var p = pos(e);
-    ctx.beginPath();
-    ctx.moveTo(p.x, p.y);
-  });
-  canvas.addEventListener('pointermove', function (e) {
-    if (!drawing) return;
-    var p = pos(e);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = size;
-    ctx.lineTo(p.x, p.y);
-    ctx.stroke();
-  });
-  ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (evt) {
-    canvas.addEventListener(evt, function () { drawing = false; });
-  });
-
-  document.querySelectorAll('.swatch').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      color = btn.dataset.color;
-      document.querySelectorAll('.swatch').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
-      btn.setAttribute('aria-pressed', 'true');
-    });
-  });
-  document.querySelectorAll('.tool-btn[data-size]').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      size = Number(btn.dataset.size);
-      document.querySelectorAll('.tool-btn[data-size]').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
-      btn.setAttribute('aria-pressed', 'true');
-    });
-  });
-  document.getElementById('clearBtn').addEventListener('click', function () {
+  function setupDrawWidget(widget) {
+    var canvas = widget.querySelector('.draw-canvas');
+    var ctx = canvas.getContext('2d');
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-  });
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    var drawing = false;
+    var color = '#2a2840';
+    var size = 3;
+
+    function pos(e) {
+      var rect = canvas.getBoundingClientRect();
+      var scaleX = canvas.width / rect.width;
+      var scaleY = canvas.height / rect.height;
+      return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+    }
+
+    canvas.addEventListener('pointerdown', function (e) {
+      drawing = true;
+      canvas.setPointerCapture(e.pointerId);
+      var p = pos(e);
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+    });
+    canvas.addEventListener('pointermove', function (e) {
+      if (!drawing) return;
+      var p = pos(e);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = size;
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+    });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (evt) {
+      canvas.addEventListener(evt, function () { drawing = false; });
+    });
+
+    widget.querySelectorAll('.swatch').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        color = btn.dataset.color;
+        widget.querySelectorAll('.swatch').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+        btn.setAttribute('aria-pressed', 'true');
+      });
+    });
+    widget.querySelectorAll('.tool-btn[data-size]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        size = Number(btn.dataset.size);
+        widget.querySelectorAll('.tool-btn[data-size]').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+        btn.setAttribute('aria-pressed', 'true');
+      });
+    });
+    widget.querySelector('.clear-btn').addEventListener('click', function () {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    });
+  }
+
+  document.querySelectorAll('.draw-widget').forEach(setupDrawWidget);
+
+  var printBtn = document.querySelector('.print-btn');
+  if (printBtn) {
+    printBtn.addEventListener('click', function () {
+      try {
+        window.print();
+      } catch (err) {
+        alert('この がめんでは いんさつできないみたい。ダウンロードした ファイルを ブラウザで ひらいてから ためしてね。');
+      }
+    });
+  }
 })();
 </script>
 </body>
