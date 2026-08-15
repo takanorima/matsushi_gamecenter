@@ -78,8 +78,16 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
+    flex-wrap: wrap;
     gap: 1rem;
     margin-bottom: 1.5rem;
+  }
+
+  .header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
   }
 
   .title-block h1 {
@@ -117,6 +125,17 @@
   }
   button.print-btn:hover { border-color: var(--accent); color: var(--accent); }
   button.print-btn svg { width: 1rem; height: 1rem; }
+  button.print-btn.reset-btn:hover { border-color: #d64545; color: #d64545; }
+
+  .save-note {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    margin: -1rem 0 1.5rem;
+  }
+  .save-note svg { flex: none; width: 1rem; height: 1rem; color: var(--accent-teal); }
 
   .who-when {
     display: flex;
@@ -400,16 +419,27 @@
       </h1>
       <p>きみだけの ゲームを かんがえる シートだよ。おもいついたことを じゆうに かいてね。</p>
     </div>
-    <button class="print-btn" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8"/><path d="M6 17H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-2"/></svg>
-      いんさつする
-    </button>
+    <div class="header-actions">
+      <button class="print-btn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8"/><path d="M6 17H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-2"/></svg>
+        いんさつする
+      </button>
+      <button class="print-btn reset-btn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/></svg>
+        ほぞんを けす
+      </button>
+    </div>
   </header>
 
   <div class="who-when">
-    <label>なまえ <input type="text" placeholder="かいてね"></label>
-    <label>ひづけ <input type="date"></label>
+    <label>なまえ <input type="text" placeholder="かいてね" data-key="who-name"></label>
+    <label>ひづけ <input type="date" data-key="who-date"></label>
   </div>
+
+  <p class="save-note">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+    かいたものは、いま つかっている ブラウザに じどうで ほぞんされるよ(べつの スマホや パソコンでは みえないよ)。
+  </p>
 
   <p class="intro-note">ぜんぶ うめなくても だいじょうぶ。かんがえた ところから かいてね。まよったら、れいを みてね。</p>
 
@@ -417,21 +447,21 @@
     <div class="step-head"><span class="step-num">1</span><span class="step-label">STEP 1</span></div>
     <h2>タイトル</h2>
     <p class="hint">れい)ねこの だいぼうけん / うちゅうレース / おばけやしきから にげろ!</p>
-    <input type="text" class="line" aria-label="ゲームのタイトル">
+    <input type="text" class="line" aria-label="ゲームのタイトル" data-key="title">
   </section>
 
   <section class="step">
     <div class="step-head"><span class="step-num">2</span><span class="step-label">STEP 2</span></div>
     <h2>キャラクター・ストーリー</h2>
     <p class="hint">れい)ねこが おうちに かえる おはなし。しゅじんこうは ちゃいろい ねこ。</p>
-    <textarea class="line" rows="3" aria-label="キャラクターとストーリー"></textarea>
+    <textarea class="line" rows="3" aria-label="キャラクターとストーリー" data-key="story"></textarea>
   </section>
 
   <section class="step">
     <div class="step-head"><span class="step-num">3</span><span class="step-label">STEP 3</span></div>
     <h2>あそびかた</h2>
     <p class="hint">どんな あそびかたか、えで せつめいしてみよう</p>
-    <div class="draw-widget">
+    <div class="draw-widget" data-key="play">
       <div class="screen-frame">
         <canvas class="draw-canvas" width="800" height="450" aria-label="あそびかたの え"></canvas>
       </div>
@@ -455,14 +485,14 @@
     <div class="step-head"><span class="step-num">4</span><span class="step-label">STEP 4</span></div>
     <h2>うごかしかた</h2>
     <p class="hint">れい)→キーを おすと まえに すすむ。スペースキーで ジャンプする。</p>
-    <textarea class="line" rows="3" aria-label="うごかしかたの せつめい"></textarea>
+    <textarea class="line" rows="3" aria-label="うごかしかたの せつめい" data-key="controls"></textarea>
   </section>
 
   <section class="step">
     <div class="step-head"><span class="step-num">5</span><span class="step-label">STEP 5</span></div>
     <h2>クリア・ゴール</h2>
     <p class="hint">れい)おばけに 3かい ぶつかったら まけ。ゴールに ついたら クリア。</p>
-    <textarea class="line" rows="3" aria-label="クリアとゴールの条件"></textarea>
+    <textarea class="line" rows="3" aria-label="クリアとゴールの条件" data-key="goal"></textarea>
   </section>
 
   <section class="step">
@@ -471,9 +501,9 @@
     <fieldset>
       <legend class="sr-only" style="position:absolute;left:-9999px;">むずかしさ</legend>
       <div class="choices">
-        <label><input type="radio" name="difficulty"> かんたん</label>
-        <label><input type="radio" name="difficulty"> ふつう</label>
-        <label><input type="radio" name="difficulty"> むずかしい</label>
+        <label><input type="radio" name="difficulty" value="かんたん" data-key="difficulty"> かんたん</label>
+        <label><input type="radio" name="difficulty" value="ふつう" data-key="difficulty"> ふつう</label>
+        <label><input type="radio" name="difficulty" value="むずかしい" data-key="difficulty"> むずかしい</label>
       </div>
     </fieldset>
   </section>
@@ -483,8 +513,8 @@
     <h2>いろ・ふんいき</h2>
     <p class="hint">れい)あかるい いろ / うちゅうみたいに くらい いろ / かわいい いろ</p>
     <div class="color-row">
-      <span class="color-pick">メインのいろ <input type="color" value="#ff6b35"></span>
-      <span class="color-pick">サブのいろ <input type="color" value="#1f9d8f"></span>
+      <span class="color-pick">メインのいろ <input type="color" value="#ff6b35" data-key="color-main"></span>
+      <span class="color-pick">サブのいろ <input type="color" value="#1f9d8f" data-key="color-sub"></span>
     </div>
   </section>
 
@@ -492,7 +522,7 @@
     <div class="step-head"><span class="step-num">8</span><span class="step-label">STEP 8</span></div>
     <h2><ruby>画面<rt>がめん</rt></ruby>の え</h2>
     <p class="hint">マウスや ゆびで、がめんに なにが みえるか かいてみよう</p>
-    <div class="draw-widget">
+    <div class="draw-widget" data-key="screen">
       <div class="screen-frame">
         <canvas class="draw-canvas" width="800" height="500" aria-label="がめんの え"></canvas>
       </div>
@@ -524,6 +554,18 @@
 
 <script>
 (function () {
+  var STORAGE_PREFIX = 'kikakusho:v1:';
+
+  function storageGet(key) {
+    try { return localStorage.getItem(key); } catch (e) { return null; }
+  }
+  function storageSet(key, value) {
+    try { localStorage.setItem(key, value); } catch (e) { /* storage full or blocked */ }
+  }
+  function storageRemove(key) {
+    try { localStorage.removeItem(key); } catch (e) { /* ignore */ }
+  }
+
   function setupDrawWidget(widget) {
     var canvas = widget.querySelector('.draw-canvas');
     var ctx = canvas.getContext('2d');
@@ -531,6 +573,22 @@
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
+
+    var canvasStorageKey = widget.dataset.key ? STORAGE_PREFIX + 'canvas:' + widget.dataset.key : null;
+
+    function saveCanvas() {
+      if (!canvasStorageKey) return;
+      storageSet(canvasStorageKey, canvas.toDataURL('image/png'));
+    }
+
+    (function loadCanvas() {
+      if (!canvasStorageKey) return;
+      var saved = storageGet(canvasStorageKey);
+      if (!saved) return;
+      var img = new Image();
+      img.onload = function () { ctx.drawImage(img, 0, 0, canvas.width, canvas.height); };
+      img.src = saved;
+    })();
 
     var drawing = false;
     var color = '#2a2840';
@@ -560,7 +618,9 @@
       ctx.stroke();
     });
     ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (evt) {
-      canvas.addEventListener(evt, function () { drawing = false; });
+      canvas.addEventListener(evt, function () {
+        if (drawing) { drawing = false; saveCanvas(); }
+      });
     });
 
     var eraserBtn = widget.querySelector('.eraser-btn');
@@ -588,12 +648,40 @@
     widget.querySelector('.clear-btn').addEventListener('click', function () {
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+      saveCanvas();
     });
   }
 
   document.querySelectorAll('.draw-widget').forEach(setupDrawWidget);
 
-  var printBtn = document.querySelector('.print-btn');
+  function restoreField(el) {
+    var key = el.dataset.key;
+    if (!key) return;
+    var saved = storageGet(STORAGE_PREFIX + key);
+    if (saved === null) return;
+    if (el.type === 'radio') {
+      el.checked = (el.value === saved);
+    } else {
+      el.value = saved;
+    }
+  }
+  function saveField(el) {
+    var key = el.dataset.key;
+    if (!key) return;
+    if (el.type === 'radio') {
+      if (el.checked) storageSet(STORAGE_PREFIX + key, el.value);
+    } else {
+      storageSet(STORAGE_PREFIX + key, el.value);
+    }
+  }
+  document.querySelectorAll('[data-key]').forEach(function (el) {
+    if (!el.matches('input, textarea')) return;
+    restoreField(el);
+    var evt = (el.type === 'color' || el.type === 'date' || el.type === 'radio') ? 'change' : 'input';
+    el.addEventListener(evt, function () { saveField(el); });
+  });
+
+  var printBtn = document.querySelector('.print-btn:not(.reset-btn)');
   if (printBtn) {
     printBtn.addEventListener('click', function () {
       try {
@@ -601,6 +689,19 @@
       } catch (err) {
         alert('この がめんでは いんさつできないみたい。ダウンロードした ファイルを ブラウザで ひらいてから ためしてね。');
       }
+    });
+  }
+
+  var resetBtn = document.querySelector('.reset-btn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', function () {
+      if (!confirm('ほんとうに ぜんぶ けしますか?もとには もどせないよ。')) return;
+      try {
+        Object.keys(localStorage).forEach(function (k) {
+          if (k.indexOf(STORAGE_PREFIX) === 0) storageRemove(k);
+        });
+      } catch (e) { /* storage blocked */ }
+      location.reload();
     });
   }
 })();
