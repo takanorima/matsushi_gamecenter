@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ゲームきかくシート</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%AE%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --paper: #f5f4fb;
+    --paper-line: rgba(76, 72, 122, 0.08);
+    --surface: #ffffff;
+    --ink: #2a2840;
+    --ink-soft: #706c8c;
+    --ink-faint: #a7a3c2;
+    --accent: #ff6b35;
+    --accent-ink: #ffffff;
+    --accent-teal: #1f9d8f;
+    --accent-yellow: #ffc94a;
+    --border: #e3e1f0;
+    --border-strong: #c9c6e0;
+    --font-display: "Hiragino Maru Gothic ProN", "BIZ UDPGothic", "Yu Gothic Medium", "Yu Gothic", "Noto Sans JP", "Meiryo", sans-serif;
+    --font-body: "Hiragino Sans", "Yu Gothic Medium", "Yu Gothic", "Noto Sans JP", "Meiryo", sans-serif;
+    --font-digit: "Helvetica Neue", Arial, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #1b1926;
+      --paper-line: rgba(255, 255, 255, 0.06);
+      --surface: #252336;
+      --ink: #eeecf9;
+      --ink-soft: #a39fc0;
+      --ink-faint: #706c8c;
+      --accent: #ff8a5c;
+      --accent-ink: #23150c;
+      --accent-teal: #4fd6c4;
+      --accent-yellow: #ffd873;
+      --border: #383554;
+      --border-strong: #4a4670;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #1b1926;
+    --paper-line: rgba(255, 255, 255, 0.06);
+    --surface: #252336;
+    --ink: #eeecf9;
+    --ink-soft: #a39fc0;
+    --ink-faint: #706c8c;
+    --accent: #ff8a5c;
+    --accent-ink: #23150c;
+    --accent-teal: #4fd6c4;
+    --accent-yellow: #ffd873;
+    --border: #383554;
+    --border-strong: #4a4670;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background:
+      linear-gradient(var(--paper-line) 1px, transparent 1px) 0 0 / 28px 28px,
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px) 0 0 / 28px 28px,
+      var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+  }
+
+  header.top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .title-block h1 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(1.6rem, 5vw, 2.2rem);
+    margin: 0 0 0.35rem;
+    text-wrap: balance;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .title-block h1 svg { flex: none; width: 1.9rem; height: 1.9rem; }
+  .title-block p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.98rem;
+    max-width: 34rem;
+  }
+
+  button.print-btn {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 0.55rem 0.9rem;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  button.print-btn:hover { border-color: var(--accent); color: var(--accent); }
+  button.print-btn svg { width: 1rem; height: 1rem; }
+
+  .who-when {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 2rem;
+  }
+  .who-when label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .who-when input {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--ink);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border-strong);
+    padding: 0.2rem 0.1rem;
+    min-width: 8rem;
+  }
+  .who-when input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .intro-note {
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+    background: color-mix(in srgb, var(--accent-yellow) 22%, transparent);
+    border: 1px dashed var(--border-strong);
+    border-radius: 10px;
+    padding: 0.7rem 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem 1.5rem 1.6rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 0 var(--border);
+    animation: rise 0.4s ease backwards;
+  }
+  .step:nth-of-type(1) { animation-delay: 0.02s; }
+  .step:nth-of-type(2) { animation-delay: 0.05s; }
+  .step:nth-of-type(3) { animation-delay: 0.08s; }
+  .step:nth-of-type(4) { animation-delay: 0.11s; }
+  .step:nth-of-type(5) { animation-delay: 0.14s; }
+  .step:nth-of-type(6) { animation-delay: 0.17s; }
+  .step:nth-of-type(7) { animation-delay: 0.20s; }
+  .step:nth-of-type(8) { animation-delay: 0.23s; }
+  @media (prefers-reduced-motion: reduce) {
+    .step { animation: none; }
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .step-head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.9rem;
+  }
+  .step-num {
+    flex: none;
+    width: 2.3rem;
+    height: 2.3rem;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-family: var(--font-digit);
+    font-weight: 800;
+    font-size: 1.05rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step-label {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.02em;
+  }
+  .step h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin: 0 0 0.4rem;
+    text-wrap: balance;
+  }
+  .step .hint {
+    font-size: 0.88rem;
+    color: var(--accent-teal);
+    margin: 0 0 0.9rem;
+  }
+
+  input[type="text"].line,
+  textarea.line {
+    width: 100%;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--ink);
+    background:
+      repeating-linear-gradient(var(--surface) 0 1.85em, var(--border) 1.85em calc(1.85em + 1px));
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.6rem 0.75rem;
+    line-height: 1.85em;
+  }
+  input[type="text"].line { height: 2.9em; }
+  textarea.line { resize: vertical; min-height: 5.6em; }
+  input[type="text"].line:focus-visible,
+  textarea.line:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+  .choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem 0.9rem;
+  }
+  .choices label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.95rem;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.4rem 0.85rem 0.4rem 0.6rem;
+    cursor: pointer;
+  }
+  .choices input { accent-color: var(--accent); width: 1.05rem; height: 1.05rem; }
+  .choices label:has(input:checked) {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, var(--paper));
+  }
+  .other-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+  }
+  .other-line input[type="text"] {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    border: none;
+    border-bottom: 1px solid var(--border-strong);
+    background: transparent;
+    padding: 0.15rem 0.1rem;
+    width: 11rem;
+  }
+
+  .color-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: center;
+  }
+  .color-pick {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+  }
+  .color-pick input[type="color"] {
+    width: 2.4rem;
+    height: 2.4rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 0;
+    background: none;
+    cursor: pointer;
+  }
+
+  .screen-frame {
+    background: #14131c;
+    border-radius: 14px;
+    padding: 0.9rem;
+    box-shadow: inset 0 0 0 1px var(--border-strong);
+  }
+  #drawCanvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 8 / 5;
+    background: #ffffff;
+    border-radius: 8px;
+    touch-action: none;
+    cursor: crosshair;
+  }
+  .draw-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0.9rem;
+  }
+  .swatch {
+    width: 1.7rem;
+    height: 1.7rem;
+    border-radius: 50%;
+    border: 2px solid var(--border-strong);
+    cursor: pointer;
+    padding: 0;
+  }
+  .swatch[aria-pressed="true"] { border-color: var(--ink); box-shadow: 0 0 0 2px var(--accent); }
+  .tool-btn {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    color: var(--ink);
+    border-radius: 8px;
+    padding: 0.4rem 0.7rem;
+    cursor: pointer;
+  }
+  .tool-btn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+  .tool-btn.danger:hover { border-color: #d64545; color: #d64545; }
+  .tool-sep { width: 1px; align-self: stretch; background: var(--border); margin: 0 0.2rem; }
+
+  footer.done {
+    background: color-mix(in srgb, var(--accent-yellow) 28%, var(--surface));
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
+    padding: 1.4rem 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  footer.done svg { flex: none; width: 2rem; height: 2rem; color: var(--accent); margin-top: 0.1rem; }
+  footer.done h2 {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    margin: 0 0 0.35rem;
+  }
+  footer.done p { margin: 0; color: var(--ink-soft); font-size: 0.95rem; }
+
+  ruby rt { font-size: 0.6em; color: var(--ink-soft); }
+
+  @media print {
+    body { background: #fff; }
+    button.print-btn { display: none; }
+    .step { box-shadow: none; break-inside: avoid; border-color: #ccc; }
+    .intro-note { background: #fff; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="top">
+    <div class="title-block">
+      <h1>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M7 9h10a4 4 0 0 1 4 4v2a2 2 0 0 1-3.5 1.3L15 14H9l-2.5 2.3A2 2 0 0 1 3 15v-2a4 4 0 0 1 4-4Z"/>
+          <path d="M8 12v2M7 13h2"/>
+          <circle cx="16.5" cy="12.5" r=".6" fill="currentColor" stroke="none"/>
+          <circle cx="18" cy="14" r=".6" fill="currentColor" stroke="none"/>
+        </svg>
+        ゲームを つくろう!
+      </h1>
+      <p>きみだけの ゲームを かんがえる シートだよ。おもいついたことを じゆうに かいてね。</p>
+    </div>
+    <button class="print-btn" onclick="window.print()" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="6" y="13" width="12" height="8"/><path d="M6 17H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-2"/></svg>
+      いんさつする
+    </button>
+  </header>
+
+  <div class="who-when">
+    <label>なまえ <input type="text" placeholder="かいてね"></label>
+    <label>ひづけ <input type="date"></label>
+  </div>
+
+  <p class="intro-note">ぜんぶ うめなくても だいじょうぶ。かんがえた ところから かいてね。まよったら、れい(例)を みてね。</p>
+
+  <section class="step">
+    <div class="step-head"><span class="step-num">1</span><span class="step-label">STEP 1</span></div>
+    <h2>タイトル</h2>
+    <p class="hint">れい)ねこの だいぼうけん / うちゅうレース / おばけやしきから にげろ!</p>
+    <input type="text" class="line" aria-label="ゲームのタイトル">
+  </section>
+
+  <section class="step">
+    <div class="step-head"><span class="step-num">2</span><span class="step-label">STEP 2</span></div>
+    <h2>おはなし・<ruby>主人公<rt>しゅじんこう</rt></ruby></h2>
+    <p class="hint">れい)ねこが おうちに かえる おはなし。しゅじんこうは ちゃいろい ねこ。</p>
+    <textarea class="line" rows="3" aria-label="おはなしと主人公"></textarea>
+  </section>
+
+  <section class="step">
+    <div class="step-head"><span class="step-num">3</span><span class="step-label">STEP 3</span></div>
+    <h2>あそびかた</h2>
+    <p class="hint">あう ものに ○を つけよう(いくつでも いいよ)</p>
+    <fieldset>
+      <legend class="sr-only" style="position:absolute;left:-9999px;">あそびかたのしゅるい</legend>
+      <div class="choices">
+        <label><input type="checkbox"> にげる・よける</label>
+        <label><input type="checkbox"> たたかう</label>
+        <label><input type="checkbox"> クイズ</label>
+        <label><input type="checkbox"> パズル</label>
+        <label><input type="checkbox"> はしる・ジャンプ</label>
+        <span class="other-line">そのた: <input type="text" placeholder="かいてね"></span>
+      </div>
+    </fieldset>
+  </section>
+
+  <section class="step">
+    <div class="step-head"><span class="step-num">4</span><span class="step-label">STEP 4</span></div>
+    <h2><ruby>操作<rt>そうさ</rt></ruby>のしかた</h2>
+    <p class="hint">れい)→キーを おすと まえに すすむ。スペースキーで ジャンプする。</p>
+    <textarea class="line" rows="3" aria-label="操作のしかた"></textarea>
+  </section>
+
+  <section class="step">
+    <div class="step-head"><span class="step-num">5</span><span class="step-label">STEP 5</span></div>
+    <h2>クリア・ゴール</h2>
+    <p class="hint">れい)おばけに 3かい ぶつかったら まけ。ゴールに ついたら クリア。</p>
+    <textarea class="line" rows="3" aria-label="クリアとゴールの条件"></textarea>
+  </section>
+
+  <section class="step">
+    <div class="step-head"><span class="step-num">6</span><span class="step-label">STEP 6</span></div>
+    <h2>むずかしさ</h2>
+    <fieldset>
+      <legend class="sr-only" style="position:absolute;left:-9999px;">むずかしさ</legend>
+      <div class="choices">
+        <label><input type="radio" name="difficulty"> かんたん</label>
+        <label><input type="radio" name="difficulty"> ふつう</label>
+        <label><input type="radio" name="difficulty"> むずかしい</label>
+      </div>
+    </fieldset>
+  </section>
+
+  <section class="step">
+    <div class="step-head"><span class="step-num">7</span><span class="step-label">STEP 7</span></div>
+    <h2>いろ・ふんいき</h2>
+    <p class="hint">れい)あかるい いろ / うちゅうみたいに くらい いろ / かわいい いろ</p>
+    <div class="color-row">
+      <span class="color-pick">メインのいろ <input type="color" value="#ff6b35"></span>
+      <span class="color-pick">サブのいろ <input type="color" value="#1f9d8f"></span>
+    </div>
+  </section>
+
+  <section class="step">
+    <div class="step-head"><span class="step-num">8</span><span class="step-label">STEP 8</span></div>
+    <h2><ruby>画面<rt>がめん</rt></ruby>の え</h2>
+    <p class="hint">マウスや ゆびで、がめんに なにが みえるか かいてみよう</p>
+    <div class="screen-frame">
+      <canvas id="drawCanvas" width="800" height="500"></canvas>
+    </div>
+    <div class="draw-tools">
+      <button class="swatch" style="background:#2a2840" data-color="#2a2840" aria-pressed="true" aria-label="くろ"></button>
+      <button class="swatch" style="background:#ff6b35" data-color="#ff6b35" aria-label="オレンジ"></button>
+      <button class="swatch" style="background:#1f9d8f" data-color="#1f9d8f" aria-label="みずいろ"></button>
+      <button class="swatch" style="background:#ffc94a" data-color="#ffc94a" aria-label="きいろ"></button>
+      <button class="swatch" style="background:#a34fd6" data-color="#a34fd6" aria-label="むらさき"></button>
+      <div class="tool-sep"></div>
+      <button class="tool-btn" data-size="3" aria-pressed="true" type="button">ほそい</button>
+      <button class="tool-btn" data-size="9" type="button">ふとい</button>
+      <div class="tool-sep"></div>
+      <button class="tool-btn danger" id="clearBtn" type="button">けす</button>
+    </div>
+  </section>
+
+  <footer class="done">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l2.6 6.6L21 11l-6.4 2.4L12 20l-2.6-6.6L3 11l6.4-2.4Z"/></svg>
+    <div>
+      <h2>できあがったら…</h2>
+      <p>おうちの ひとと いっしょに、この シートを みせながら いっしょに ゲームを つくろう!</p>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  var canvas = document.getElementById('drawCanvas');
+  var ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  var drawing = false;
+  var color = '#2a2840';
+  var size = 3;
+
+  function pos(e) {
+    var rect = canvas.getBoundingClientRect();
+    var scaleX = canvas.width / rect.width;
+    var scaleY = canvas.height / rect.height;
+    return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+  }
+
+  canvas.addEventListener('pointerdown', function (e) {
+    drawing = true;
+    canvas.setPointerCapture(e.pointerId);
+    var p = pos(e);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  });
+  canvas.addEventListener('pointermove', function (e) {
+    if (!drawing) return;
+    var p = pos(e);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = size;
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+  });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (evt) {
+    canvas.addEventListener(evt, function () { drawing = false; });
+  });
+
+  document.querySelectorAll('.swatch').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      color = btn.dataset.color;
+      document.querySelectorAll('.swatch').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+      btn.setAttribute('aria-pressed', 'true');
+    });
+  });
+  document.querySelectorAll('.tool-btn[data-size]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      size = Number(btn.dataset.size);
+      document.querySelectorAll('.tool-btn[data-size]').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+      btn.setAttribute('aria-pressed', 'true');
+    });
+  });
+  document.getElementById('clearBtn').addEventListener('click', function () {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  });
+})();
+</script>
+</body>
+</html>
