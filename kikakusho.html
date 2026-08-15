@@ -126,6 +126,15 @@
   button.print-btn:hover { border-color: var(--accent); color: var(--accent); }
   button.print-btn svg { width: 1rem; height: 1rem; }
   button.print-btn.reset-btn:hover { border-color: #d64545; color: #d64545; }
+  button.print-btn.submit-btn {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+    font-size: 0.95rem;
+    padding: 0.65rem 1.1rem;
+    margin-top: 0.9rem;
+  }
+  button.print-btn.submit-btn:hover { color: var(--accent-ink); filter: brightness(1.06); }
 
   .save-note {
     display: flex;
@@ -546,7 +555,11 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l2.6 6.6L21 11l-6.4 2.4L12 20l-2.6-6.6L3 11l6.4-2.4Z"/></svg>
     <div>
       <h2>できあがったら…</h2>
-      <p>おうちの ひとと いっしょに、この シートを みせながら いっしょに ゲームを つくろう!</p>
+      <p>したの ボタンを おすと、かいた ないようを 1まいの ファイルに まとめて ダウンロードできるよ。おうちの ひとに おくって、いっしょに ゲームを つくろう!</p>
+      <button class="print-btn submit-btn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 19h16"/></svg>
+        ていしゅつする(ダウンロード)
+      </button>
     </div>
   </footer>
 
@@ -681,7 +694,7 @@
     el.addEventListener(evt, function () { saveField(el); });
   });
 
-  var printBtn = document.querySelector('.print-btn:not(.reset-btn)');
+  var printBtn = document.querySelector('.print-btn:not(.reset-btn):not(.submit-btn)');
   if (printBtn) {
     printBtn.addEventListener('click', function () {
       try {
@@ -702,6 +715,92 @@
         });
       } catch (e) { /* storage blocked */ }
       location.reload();
+    });
+  }
+
+  function escHtml(s) {
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function collectSubmission() {
+    var data = {};
+    document.querySelectorAll('[data-key]').forEach(function (el) {
+      if (!el.matches('input, textarea')) return;
+      var key = el.dataset.key;
+      if (el.type === 'radio') {
+        if (el.checked) data[key] = el.value;
+      } else if (data[key] === undefined) {
+        data[key] = el.value;
+      }
+    });
+    var drawings = {};
+    document.querySelectorAll('.draw-widget').forEach(function (widget) {
+      var key = widget.dataset.key;
+      var canvas = widget.querySelector('.draw-canvas');
+      if (key && canvas) drawings[key] = canvas.toDataURL('image/png');
+    });
+    return { data: data, drawings: drawings };
+  }
+
+  function buildSubmissionHtml(data, drawings) {
+    function textBlock(label, value) {
+      var body = value ? escHtml(value).replace(/\n/g, '<br>') : '<span class="empty">(まだ かいていません)</span>';
+      return '<section class="a-block"><h2>' + escHtml(label) + '</h2><p>' + body + '</p></section>';
+    }
+    function imageBlock(label, dataUrl) {
+      var body = dataUrl ? '<img src="' + dataUrl + '" alt="' + escHtml(label) + '">' : '<p class="empty">(まだ かいていません)</p>';
+      return '<section class="a-block"><h2>' + escHtml(label) + '</h2>' + body + '</section>';
+    }
+    var name = data['who-name'] || '';
+    var date = data['who-date'] || '';
+    return '<!doctype html><html lang="ja"><head><meta charset="utf-8">'
+      + '<meta name="viewport" content="width=device-width, initial-scale=1">'
+      + '<title>ゲームきかくシート(ていしゅつばん) ' + escHtml(name) + '</title>'
+      + '<style>'
+      + 'body{font-family:"Hiragino Sans","Yu Gothic Medium","Noto Sans JP",sans-serif;max-width:44rem;margin:0 auto;padding:2rem 1.25rem 4rem;background:#f5f4fb;color:#2a2840;line-height:1.7;}'
+      + 'h1{font-size:1.5rem;margin:0 0 .3rem;}'
+      + '.meta{color:#706c8c;font-size:.9rem;margin-bottom:2rem;}'
+      + '.a-block{background:#fff;border:1px solid #e3e1f0;border-radius:14px;padding:1.2rem 1.4rem;margin-bottom:1.2rem;}'
+      + '.a-block h2{font-size:1rem;color:#ff6b35;margin:0 0 .5rem;}'
+      + '.a-block p{margin:0;white-space:pre-wrap;}'
+      + '.a-block img{max-width:100%;border-radius:8px;border:1px solid #e3e1f0;display:block;}'
+      + '.empty{color:#a7a3c2;font-style:italic;}'
+      + '.swatch-row{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;}'
+      + '.swatch-row span{display:inline-flex;align-items:center;gap:.4rem;}'
+      + '.swatch-row i{display:inline-block;width:1.4rem;height:1.4rem;border-radius:50%;border:1px solid #c9c6e0;}'
+      + '</style></head><body>'
+      + '<h1>ゲームきかくシート(ていしゅつばん)</h1>'
+      + '<p class="meta">なまえ: ' + escHtml(name || '(未記入)') + ' ／ ひづけ: ' + escHtml(date || '(未記入)') + '</p>'
+      + textBlock('タイトル', data['title'])
+      + textBlock('キャラクター・ストーリー', data['story'])
+      + imageBlock('あそびかた(絵)', drawings['play'])
+      + textBlock('うごかしかた', data['controls'])
+      + textBlock('クリア・ゴール', data['goal'])
+      + textBlock('むずかしさ', data['difficulty'])
+      + '<section class="a-block"><h2>いろ・ふんいき</h2><div class="swatch-row">'
+      + '<span><i style="background:' + escHtml(data['color-main'] || '#ff6b35') + '"></i>メイン ' + escHtml(data['color-main'] || '') + '</span>'
+      + '<span><i style="background:' + escHtml(data['color-sub'] || '#1f9d8f') + '"></i>サブ ' + escHtml(data['color-sub'] || '') + '</span>'
+      + '</div></section>'
+      + imageBlock('画面の絵', drawings['screen'])
+      + '</body></html>';
+  }
+
+  var submitBtn = document.querySelector('.submit-btn');
+  if (submitBtn) {
+    submitBtn.addEventListener('click', function () {
+      var snap = collectSubmission();
+      var html = buildSubmissionHtml(snap.data, snap.drawings);
+      var blob = new Blob([html], { type: 'text/html' });
+      var url = URL.createObjectURL(blob);
+      var datePart = (snap.data['who-date'] || new Date().toISOString().slice(0, 10)).replace(/[^0-9-]/g, '');
+      var namePart = (snap.data['who-name'] || 'game-plan').replace(/[^\w぀-ヿ゠-ヿ一-龯]/g, '');
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'kikakusho_' + datePart + '_' + (namePart || 'game-plan') + '.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
     });
   }
 })();
