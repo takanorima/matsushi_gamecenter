@@ -441,6 +441,7 @@
         <button class="swatch" style="background:#1f9d8f" data-color="#1f9d8f" aria-label="みずいろ"></button>
         <button class="swatch" style="background:#ffc94a" data-color="#ffc94a" aria-label="きいろ"></button>
         <button class="swatch" style="background:#a34fd6" data-color="#a34fd6" aria-label="むらさき"></button>
+        <button class="tool-btn eraser-btn" type="button" aria-pressed="false">けしゴム</button>
         <div class="tool-sep"></div>
         <button class="tool-btn" data-size="3" aria-pressed="true" type="button">ほそい</button>
         <button class="tool-btn" data-size="9" type="button">ふとい</button>
@@ -501,6 +502,7 @@
         <button class="swatch" style="background:#1f9d8f" data-color="#1f9d8f" aria-label="みずいろ"></button>
         <button class="swatch" style="background:#ffc94a" data-color="#ffc94a" aria-label="きいろ"></button>
         <button class="swatch" style="background:#a34fd6" data-color="#a34fd6" aria-label="むらさき"></button>
+        <button class="tool-btn eraser-btn" type="button" aria-pressed="false">けしゴム</button>
         <div class="tool-sep"></div>
         <button class="tool-btn" data-size="3" aria-pressed="true" type="button">ほそい</button>
         <button class="tool-btn" data-size="9" type="button">ふとい</button>
@@ -533,6 +535,7 @@
     var drawing = false;
     var color = '#2a2840';
     var size = 3;
+    var erasing = false;
 
     function pos(e) {
       var rect = canvas.getBoundingClientRect();
@@ -551,8 +554,8 @@
     canvas.addEventListener('pointermove', function (e) {
       if (!drawing) return;
       var p = pos(e);
-      ctx.strokeStyle = color;
-      ctx.lineWidth = size;
+      ctx.strokeStyle = erasing ? '#ffffff' : color;
+      ctx.lineWidth = erasing ? size * 4 : size;
       ctx.lineTo(p.x, p.y);
       ctx.stroke();
     });
@@ -560,12 +563,20 @@
       canvas.addEventListener(evt, function () { drawing = false; });
     });
 
+    var eraserBtn = widget.querySelector('.eraser-btn');
     widget.querySelectorAll('.swatch').forEach(function (btn) {
       btn.addEventListener('click', function () {
         color = btn.dataset.color;
+        erasing = false;
         widget.querySelectorAll('.swatch').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
         btn.setAttribute('aria-pressed', 'true');
+        eraserBtn.setAttribute('aria-pressed', 'false');
       });
+    });
+    eraserBtn.addEventListener('click', function () {
+      erasing = true;
+      widget.querySelectorAll('.swatch').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+      eraserBtn.setAttribute('aria-pressed', 'true');
     });
     widget.querySelectorAll('.tool-btn[data-size]').forEach(function (btn) {
       btn.addEventListener('click', function () {
