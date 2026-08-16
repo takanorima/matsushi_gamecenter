@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>ASMRゲーム(寛成さん作)</title>
+<style>
+  :root{
+    --main:#ffd6ff;
+    --sub:#dcffff;
+    --skin:#f6bd8a;
+    --skin-dark:#e8a468;
+    --hair:#e8b23d;
+    --hair-dark:#d69a24;
+    --lip:#ff7a52;
+    --lip-dark:#e85f3a;
+    --blush:#ff9ec2;
+    --ink:#4a3b3b;
+    --card:#fffaf6;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{
+    margin:0;
+    height:100%;
+    overflow:hidden;
+    font-family:"Hiragino Sans","Yu Gothic Medium","Noto Sans JP",sans-serif;
+    color:var(--ink);
+    background:linear-gradient(160deg,var(--sub),var(--main) 70%);
+    background-size:200% 200%;
+    animation:bgshift 14s ease-in-out infinite;
+    user-select:none;
+    touch-action:none;
+  }
+  @keyframes bgshift{
+    0%,100%{background-position:0% 0%;}
+    50%{background-position:100% 100%;}
+  }
+  #app{
+    position:fixed;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .screen{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:1.5rem;
+  }
+  .screen[hidden]{display:none;}
+
+  /* ---- ふわふわ背景の飾り ---- */
+  .sparkle{
+    position:fixed;
+    pointer-events:none;
+    font-size:1.4rem;
+    opacity:.55;
+    animation:float 9s ease-in-out infinite;
+    z-index:0;
+  }
+  @keyframes float{
+    0%{transform:translateY(0) rotate(0deg);}
+    50%{transform:translateY(-26px) rotate(15deg);}
+    100%{transform:translateY(0) rotate(0deg);}
+  }
+
+  /* ---- タイトル画面 ---- */
+  #titleScreen h1{
+    font-size:2.1rem;
+    margin:0 0 .3rem;
+    color:#c9548a;
+    text-shadow:0 2px 0 #fff, 0 4px 10px rgba(200,90,140,.25);
+  }
+  #titleScreen p{
+    margin:0 0 1.6rem;
+    font-size:1rem;
+    color:#7c5a6b;
+  }
+  .gal-preview{
+    width:180px;
+    height:auto;
+    filter:drop-shadow(0 8px 14px rgba(180,110,60,.25));
+    margin-bottom:1.4rem;
+  }
+  button.big{
+    font-size:1.3rem;
+    font-weight:bold;
+    color:#fff;
+    background:linear-gradient(135deg,#ff9ecb,#ff7ab0);
+    border:none;
+    border-radius:999px;
+    padding:.9rem 2.4rem;
+    box-shadow:0 6px 0 #e0568f, 0 10px 18px rgba(224,86,143,.35);
+    cursor:pointer;
+    transition:transform .08s ease;
+  }
+  button.big:active{
+    transform:translateY(4px);
+    box-shadow:0 2px 0 #e0568f, 0 4px 10px rgba(224,86,143,.35);
+  }
+
+  /* ---- ゲーム画面 ---- */
+  #hud{
+    position:fixed;
+    top:0;left:0;right:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:.7rem;
+    padding:.8rem 1rem;
+    z-index:5;
+  }
+  #hudBar{
+    width:min(70vw,320px);
+    height:1.1rem;
+    background:rgba(255,255,255,.6);
+    border-radius:999px;
+    overflow:hidden;
+    border:2px solid #fff;
+    box-shadow:0 2px 6px rgba(120,80,100,.15);
+  }
+  #hudFill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#ff9ecb,#ffd166);
+    transition:width .35s cubic-bezier(.3,1.6,.5,1);
+    border-radius:999px;
+  }
+  #hudCount{
+    font-weight:bold;
+    color:#c9548a;
+    background:#fff;
+    border-radius:999px;
+    padding:.15rem .7rem;
+    font-size:.95rem;
+    box-shadow:0 2px 6px rgba(120,80,100,.15);
+    white-space:nowrap;
+  }
+
+  #galWrap{
+    position:fixed;
+    left:50%;
+    bottom:0;
+    transform:translateX(-50%);
+    width:min(72vw,320px);
+    pointer-events:none;
+    z-index:2;
+    animation:bob 3.2s ease-in-out infinite;
+  }
+  @keyframes bob{
+    0%,100%{transform:translateX(-50%) translateY(0);}
+    50%{transform:translateX(-50%) translateY(-6px);}
+  }
+  #galSvg{width:100%;height:auto;display:block;}
+  #mouthGroup{
+    transform-box:fill-box;
+    transform-origin:center;
+    transition:transform .08s ease;
+  }
+  #mouthGroup.chomp{
+    animation:chomp .32s ease;
+  }
+  @keyframes chomp{
+    0%{transform:scaleY(1);}
+    35%{transform:scaleY(.25);}
+    65%{transform:scaleY(1.15);}
+    100%{transform:scaleY(1);}
+  }
+
+  #foodLayer{
+    position:fixed;
+    inset:0;
+    z-index:3;
+  }
+  .food{
+    position:fixed;
+    font-size:3rem;
+    line-height:1;
+    filter:drop-shadow(0 6px 8px rgba(120,80,60,.25));
+    cursor:grab;
+    touch-action:none;
+    animation:pop-in .28s cubic-bezier(.3,1.7,.4,1), wiggle 2.4s ease-in-out infinite .28s;
+    will-change:transform;
+  }
+  .food.dragging{
+    cursor:grabbing;
+    animation:none !important;
+    scale:1.15;
+    filter:drop-shadow(0 10px 14px rgba(120,80,60,.35));
+  }
+  .food.eaten{
+    animation:eaten-pop .28s ease forwards !important;
+    pointer-events:none;
+  }
+  @keyframes pop-in{
+    0%{transform:scale(0) rotate(-20deg);opacity:0;}
+    100%{transform:scale(1) rotate(0deg);opacity:1;}
+  }
+  @keyframes wiggle{
+    0%,100%{transform:rotate(-4deg);}
+    50%{transform:rotate(4deg);}
+  }
+  @keyframes eaten-pop{
+    0%{transform:scale(1);opacity:1;}
+    100%{transform:scale(0.1);opacity:0;}
+  }
+
+  .particle{
+    position:fixed;
+    font-size:1.3rem;
+    pointer-events:none;
+    z-index:6;
+    animation:burst .6s ease-out forwards;
+  }
+  @keyframes burst{
+    0%{transform:translate(0,0) scale(1);opacity:1;}
+    100%{transform:var(--dx) scale(.4);opacity:0;}
+  }
+
+  /* ---- クリア画面 ---- */
+  #clearScreen h2{
+    font-size:2.4rem;
+    margin:0 0 .4rem;
+    color:#c9548a;
+    text-shadow:0 2px 0 #fff, 0 4px 10px rgba(200,90,140,.3);
+  }
+  #clearScreen p{
+    margin:0 0 1.6rem;
+    font-size:1.05rem;
+  }
+  .confetti{
+    position:fixed;
+    font-size:1.6rem;
+    top:-2rem;
+    pointer-events:none;
+    z-index:9;
+    animation:fall linear forwards;
+  }
+  @keyframes fall{
+    to{transform:translateY(112vh) rotate(360deg);opacity:.2;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- タイトル画面 -->
+  <section id="titleScreen" class="screen">
+    <h1>ASMRゲーム</h1>
+    <p>ゆびで たべものを つまんで<br>おくちに はこんであげよう♪</p>
+    <svg id="galPreview" class="gal-preview" viewBox="0 0 300 340" xmlns="http://www.w3.org/2000/svg"></svg>
+    <button id="startBtn" class="big" type="button">▶ はじめる</button>
+  </section>
+
+  <!-- ゲーム画面 -->
+  <section id="gameScreen" class="screen" hidden>
+    <div id="hud">
+      <div id="hudBar"><div id="hudFill"></div></div>
+      <div id="hudCount">0 / 10</div>
+    </div>
+    <div id="galWrap">
+      <svg id="galSvg" viewBox="0 0 300 340" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div id="foodLayer"></div>
+  </section>
+
+  <!-- クリア画面 -->
+  <section id="clearScreen" class="screen" hidden>
+    <h2>クリア!! 🎉</h2>
+    <p>10こ たべさせてあげたよ、えらい!</p>
+    <button id="retryBtn" class="big" type="button">🔁 もういちど あそぶ</button>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ------------------------------------------------------------
+     ギャルキャラクターのSVG(おなじものを タイトル/ゲーム画面で使う)
+  ------------------------------------------------------------ */
+  function galMarkup(mouthId){
+    return `
+      <ellipse cx="150" cy="330" rx="95" ry="30" fill="#00000012"/>
+      <path d="M60 180 C40 260 70 320 150 330 C230 320 260 260 240 180 Z" fill="var(--main)"/>
+      <path d="M40 130 C15 190 30 250 55 275 C40 210 55 160 80 130 Z" fill="var(--hair-dark)"/>
+      <path d="M260 130 C285 190 270 250 245 275 C260 210 245 160 220 130 Z" fill="var(--hair-dark)"/>
+      <ellipse cx="150" cy="150" rx="92" ry="98" fill="var(--skin)"/>
+      <path d="M58 120 C55 60 100 18 150 18 C200 18 245 60 242 120 C230 85 205 95 195 78 C185 95 165 100 150 82 C135 100 115 95 105 78 C95 95 70 85 58 120 Z" fill="var(--hair)"/>
+      <path d="M55 95 C20 110 15 165 35 205 C40 165 45 130 65 108 Z" fill="var(--hair)"/>
+      <path d="M245 95 C280 110 285 165 265 205 C260 165 255 130 235 108 Z" fill="var(--hair)"/>
+      <ellipse cx="112" cy="168" rx="16" ry="20" fill="#3a2a2a"/>
+      <ellipse cx="188" cy="168" rx="16" ry="20" fill="#3a2a2a"/>
+      <ellipse cx="108" cy="161" rx="5" ry="6" fill="#fff"/>
+      <ellipse cx="184" cy="161" rx="5" ry="6" fill="#fff"/>
+      <path d="M94 150 L124 144 M94 156 L123 152 M96 143 L122 136" stroke="#3a2a2a" stroke-width="3" stroke-linecap="round"/>
+      <path d="M206 150 L176 144 M206 156 L177 152 M204 143 L178 136" stroke="#3a2a2a" stroke-width="3" stroke-linecap="round"/>
+      <ellipse cx="90" cy="196" rx="16" ry="9" fill="var(--blush)" opacity="0.65"/>
+      <ellipse cx="210" cy="196" rx="16" ry="9" fill="var(--blush)" opacity="0.65"/>
+      <g id="${mouthId}">
+        <ellipse cx="150" cy="214" rx="22" ry="16" fill="var(--lip-dark)"/>
+        <ellipse cx="150" cy="210" rx="18" ry="11" fill="var(--lip)"/>
+      </g>
+    `;
+  }
+  document.getElementById("galPreview").innerHTML = galMarkup("mouthGroupPreview");
+  document.getElementById("galSvg").innerHTML = galMarkup("mouthGroup");
+
+  /* ------------------------------------------------------------
+     効果音(WebAudioで生成、外部ファイル不要)
+  ------------------------------------------------------------ */
+  var audioCtx = null;
+  function ensureAudio(){
+    if(!audioCtx){
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if(AC) audioCtx = new AC();
+    }
+    if(audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+  }
+  function tone(freqStart, freqEnd, duration, startTime, gainPeak, type){
+    if(!audioCtx) return;
+    var t = audioCtx.currentTime + (startTime||0);
+    var osc = audioCtx.createOscillator();
+    var gain = audioCtx.createGain();
+    osc.type = type || "sine";
+    osc.frequency.setValueAtTime(freqStart, t);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(freqEnd,1), t + duration);
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(gainPeak||0.3, t + Math.min(0.02,duration/3));
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(t);
+    osc.stop(t + duration + 0.02);
+  }
+  function playChomp(){ ensureAudio(); tone(650,180,0.16,0,0.35,"sine"); }
+  function playPop(){ ensureAudio(); tone(900,1200,0.08,0,0.12,"sine"); }
+  function playClear(){
+    ensureAudio();
+    var notes = [523,659,784,1046];
+    notes.forEach(function(f,i){ tone(f,f,0.22,i*0.12,0.28,"triangle"); });
+  }
+
+  /* ------------------------------------------------------------
+     画面切り替え
+  ------------------------------------------------------------ */
+  var titleScreen = document.getElementById("titleScreen");
+  var gameScreen = document.getElementById("gameScreen");
+  var clearScreen = document.getElementById("clearScreen");
+  var startBtn = document.getElementById("startBtn");
+  var retryBtn = document.getElementById("retryBtn");
+  var hudFill = document.getElementById("hudFill");
+  var hudCount = document.getElementById("hudCount");
+  var foodLayer = document.getElementById("foodLayer");
+  var mouthGroup = document.getElementById("galSvg").querySelector("#mouthGroup");
+
+  var GOAL = 10;
+  var eatenCount = 0;
+  var activeFood = null;
+  var spawnTimer = null;
+
+  var FOODS = ["🍇","🥕","🍌","🍓","🍑","🍋","🍒","🍉"];
+
+  function showScreen(el){
+    [titleScreen, gameScreen, clearScreen].forEach(function(s){ s.hidden = (s !== el); });
+  }
+
+  function startGame(){
+    ensureAudio();
+    eatenCount = 0;
+    updateHud();
+    clearFood();
+    showScreen(gameScreen);
+    spawnFood();
+  }
+
+  function updateHud(){
+    hudFill.style.width = (eatenCount / GOAL * 100) + "%";
+    hudCount.textContent = eatenCount + " / " + GOAL;
+  }
+
+  function clearFood(){
+    foodLayer.innerHTML = "";
+    activeFood = null;
+    if(spawnTimer){ clearTimeout(spawnTimer); spawnTimer = null; }
+  }
+
+  function randomSpawnPos(size){
+    var margin = 16;
+    var hudH = 70;
+    var topLimit = hudH + margin;
+    var bottomLimit = window.innerHeight * 0.5;
+    var x = margin + Math.random() * (window.innerWidth - size - margin*2);
+    var y = topLimit + Math.random() * Math.max(40, bottomLimit - topLimit);
+    return {x:x, y:y};
+  }
+
+  function spawnFood(){
+    if(eatenCount >= GOAL) return;
+    var size = 56;
+    var pos = randomSpawnPos(size);
+    var el = document.createElement("div");
+    el.className = "food";
+    el.textContent = FOODS[Math.floor(Math.random() * FOODS.length)];
+    el.style.left = pos.x + "px";
+    el.style.top = pos.y + "px";
+    foodLayer.appendChild(el);
+    activeFood = el;
+    playPop();
+    attachDrag(el);
+  }
+
+  function attachDrag(el){
+    var dragging = false;
+    var offsetX = 0, offsetY = 0;
+
+    el.addEventListener("pointerdown", function(e){
+      dragging = true;
+      el.classList.add("dragging");
+      el.setPointerCapture(e.pointerId);
+      var rect = el.getBoundingClientRect();
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+      ensureAudio();
+    });
+
+    el.addEventListener("pointermove", function(e){
+      if(!dragging) return;
+      var x = e.clientX - offsetX;
+      var y = e.clientY - offsetY;
+      el.style.left = x + "px";
+      el.style.top = y + "px";
+    });
+
+    function endDrag(e){
+      if(!dragging) return;
+      dragging = false;
+      el.classList.remove("dragging");
+      checkDrop(el);
+    }
+    el.addEventListener("pointerup", endDrag);
+    el.addEventListener("pointercancel", endDrag);
+  }
+
+  function checkDrop(el){
+    var foodRect = el.getBoundingClientRect();
+    var foodCx = foodRect.left + foodRect.width/2;
+    var foodCy = foodRect.top + foodRect.height/2;
+    var mouthRect = mouthGroup.getBoundingClientRect();
+    var mouthCx = mouthRect.left + mouthRect.width/2;
+    var mouthCy = mouthRect.top + mouthRect.height/2;
+    var dist = Math.hypot(foodCx - mouthCx, foodCy - mouthCy);
+    var threshold = Math.max(mouthRect.width, mouthRect.height)/2 + 46;
+    if(dist <= threshold){
+      eatFood(el, mouthCx, mouthCy);
+    }
+  }
+
+  function eatFood(el, atX, atY){
+    el.classList.add("eaten");
+    playChomp();
+    mouthGroup.classList.remove("chomp");
+    void mouthGroup.offsetWidth;
+    mouthGroup.classList.add("chomp");
+    burstParticles(atX, atY);
+    eatenCount++;
+    updateHud();
+    setTimeout(function(){
+      if(el.parentNode) el.parentNode.removeChild(el);
+    }, 260);
+
+    if(eatenCount >= GOAL){
+      spawnTimer = setTimeout(function(){
+        showScreen(clearScreen);
+        playClear();
+        launchConfetti();
+      }, 420);
+    } else {
+      spawnTimer = setTimeout(spawnFood, 320);
+    }
+  }
+
+  function burstParticles(x, y){
+    var glyphs = ["✨","💖","⭐"];
+    for(var i=0;i<8;i++){
+      var p = document.createElement("div");
+      p.className = "particle";
+      p.textContent = glyphs[Math.floor(Math.random()*glyphs.length)];
+      var angle = (Math.PI*2) * (i/8) + Math.random()*0.4;
+      var dist = 40 + Math.random()*30;
+      p.style.setProperty("--dx", "translate(" + Math.cos(angle)*dist + "px," + Math.sin(angle)*dist + "px)");
+      p.style.left = (x - 10) + "px";
+      p.style.top = (y - 10) + "px";
+      document.body.appendChild(p);
+      (function(node){
+        setTimeout(function(){ if(node.parentNode) node.parentNode.removeChild(node); }, 650);
+      })(p);
+    }
+  }
+
+  function launchConfetti(){
+    var glyphs = ["🎉","✨","💕","⭐","🌸"];
+    for(var i=0;i<26;i++){
+      (function(){
+        var c = document.createElement("div");
+        c.className = "confetti";
+        c.textContent = glyphs[Math.floor(Math.random()*glyphs.length)];
+        c.style.left = (Math.random()*100) + "vw";
+        c.style.animationDuration = (2.2 + Math.random()*1.6) + "s";
+        c.style.animationDelay = (Math.random()*0.6) + "s";
+        document.body.appendChild(c);
+        setTimeout(function(){ if(c.parentNode) c.parentNode.removeChild(c); }, 4500);
+      })();
+    }
+  }
+
+  /* ------------------------------------------------------------
+     背景のふわふわ飾り
+  ------------------------------------------------------------ */
+  (function ambientSparkles(){
+    var glyphs = ["✨","💗","⭐","💫"];
+    for(var i=0;i<10;i++){
+      var s = document.createElement("div");
+      s.className = "sparkle";
+      s.textContent = glyphs[i % glyphs.length];
+      s.style.left = (Math.random()*94) + "vw";
+      s.style.top = (Math.random()*90) + "vh";
+      s.style.animationDuration = (7 + Math.random()*5) + "s";
+      s.style.animationDelay = (Math.random()*4) + "s";
+      document.body.appendChild(s);
+    }
+  })();
+
+  startBtn.addEventListener("click", startGame);
+  retryBtn.addEventListener("click", startGame);
+
+})();
+</script>
+</body>
+</html>
