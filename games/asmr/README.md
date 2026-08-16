@@ -24,6 +24,7 @@
 - 背景にはキラキラとくだものを散りばめて演出
 - 咀嚼音は `assets/sfx/chew.wav` があればそれを再生し、無ければWebAudioで生成した音で代用する(詳細は[`assets/sfx/README.md`](./assets/sfx/README.md))
 - キャラクターは寛成さんの手描きイラストの実画像([`assets/art/gal_closed.jpg`](./assets/art/gal_closed.jpg) / [`assets/art/gal_open.jpg`](./assets/art/gal_open.jpg))をそのまま埋め込んでおり、食べるたびに口を閉じたver.と開けたver.が切り替わる(解像度は表示用に軽量化ずみ、元画像はトリミングのみで線は加工していない)
+- 画面右上に「Kansei 作」のクレジットを常時表示
 
 ### 現在、仮の状態にしているもの
 
