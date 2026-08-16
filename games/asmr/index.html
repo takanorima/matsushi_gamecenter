@@ -8,16 +8,13 @@
   :root{
     --main:#ffd6ff;
     --sub:#dcffff;
-    --skin:#f6bd8a;
-    --skin-dark:#e8a468;
-    --hair:#e8b23d;
-    --hair-dark:#d69a24;
-    --lip:#ff7a52;
-    --lip-dark:#e85f3a;
-    --blush:#ff9ec2;
+    --paper:#fdf6ea;
+    --skin:#fdf6ea;
+    --skin-dark:#e8dcc4;
+    --ink:#2b2320;
+    --tongue:#eaa79a;
     --top:#ff9ecb;
     --top-dark:#f07ab3;
-    --ink:#4a3b3b;
     --wood:#c68a52;
     --wood-dark:#96602f;
   }
@@ -169,20 +166,23 @@
     50%{transform:translate(-50%,calc(-52% - 6px));}
   }
   #galSvg{width:100%;height:auto;display:block;overflow:visible;}
-  #mouthGroup{
+  .mouth-group{
     transform-box:fill-box;
     transform-origin:center;
     transition:transform .08s ease;
   }
-  #mouthGroup.chomp{
+  .mouth-group.chewing{
     animation:chomp .32s ease;
   }
   @keyframes chomp{
-    0%{transform:scaleY(1);}
-    35%{transform:scaleY(.25);}
-    65%{transform:scaleY(1.15);}
-    100%{transform:scaleY(1);}
+    0%{transform:scale(1);}
+    35%{transform:scale(1.08,.9);}
+    65%{transform:scale(.96,1.06);}
+    100%{transform:scale(1);}
   }
+  .mouth-open{display:none;}
+  .chewing .mouth-open{display:block;}
+  .chewing .mouth-closed{display:none;}
 
   /* ---- テーブルとお皿 ---- */
   #tableWrap{
@@ -321,10 +321,10 @@
 
   /* ------------------------------------------------------------
      ギャルキャラクターのSVG(おなじものを タイトル/ゲーム画面で使う)
-     寛成さんの手描きスケッチ(丸い輪郭・リボン・ギザギザ前髪・
-     キラキラ星の目・大きく開いた口・左右非対称のツインテール)を
-     もとにした解釈版。実物のイラストを画像として受け取れたら
-     それをそのまま差し替える予定。
+     寛成さんの手描きイラスト(口を開けたver./閉じたver.)をもとに
+     線画のタッチをトレースした版。まる顔・平たいリボン・ギザギザ
+     前髪・見開いた片目+ウインクしたもう片目・非対称のツインテール
+     を再現し、口は開閉2パターンを描き分けて食べるたびに切り替える。
   ------------------------------------------------------------ */
   function galMarkup(mouthId){
     return `
@@ -335,40 +335,51 @@
       <path d="M133 226 L133 262 C133 274 167 274 167 262 L167 226 Z" fill="var(--skin)"/>
       <path d="M133 250 C144 260 156 260 167 250 L167 262 C156 270 144 270 133 262 Z" fill="var(--skin-dark)" opacity=".5"/>
 
-      <path d="M72 100 C36 116 16 148 24 188 C32 158 48 132 78 116 Z" fill="var(--hair-dark)"/>
-      <path d="M68 110 L28 100 M70 122 L24 124 M74 134 L30 146" stroke="var(--hair)" stroke-width="9" stroke-linecap="round"/>
+      <path d="M150 40 C216 40 255 88 253 154 C251 210 218 246 150 250 C82 246 49 210 47 154 C45 88 84 40 150 40 Z" fill="var(--paper)" stroke="var(--ink)" stroke-width="4"/>
 
-      <path d="M226 92 C258 122 270 176 266 232 C264 272 260 306 276 336" stroke="var(--hair-dark)" stroke-width="18" stroke-linecap="round" fill="none"/>
-      <path d="M230 100 C256 130 264 178 258 228" stroke="var(--hair)" stroke-width="10" stroke-linecap="round" fill="none"/>
+      <path d="M74 96 C40 108 20 138 26 176 C30 156 42 136 60 122" fill="none" stroke="var(--ink)" stroke-width="4.5" stroke-linecap="round"/>
+      <path d="M70 108 L30 98 M70 120 L26 122 M74 132 L34 146 M78 146 L44 168" fill="none" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>
 
-      <path d="M150 42 C214 42 254 88 252 152 C250 208 218 244 150 248 C82 244 50 208 48 152 C46 88 86 42 150 42 Z" fill="var(--skin)"/>
+      <path d="M222 88 C258 118 272 172 268 230 C266 278 260 320 278 360" fill="none" stroke="var(--ink)" stroke-width="4.5" stroke-linecap="round"/>
+      <path d="M228 96 C256 128 266 176 260 226 C258 264 252 300 264 332" fill="none" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M214 92 C240 128 248 178 240 226 C236 258 228 288 240 316" fill="none" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>
 
-      <path d="M66 118 L82 76 L98 116 L112 70 L128 114 L144 68 L160 114 L176 70 L192 116 L206 76 L222 118" fill="none" stroke="var(--hair)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M66 118 L82 74 L98 116 L112 68 L128 114 L144 66 L160 114 L176 68 L192 116 L206 74 L222 118" fill="none" stroke="var(--ink)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M96 116 L86 148 M128 114 L120 148" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round" opacity=".8"/>
 
-      <g transform="translate(196,50) rotate(-10)">
-        <path d="M-26 -9 L-3 0 L-26 9 Z" fill="#ffffff" stroke="#e78fc2" stroke-width="2.5" stroke-linejoin="round"/>
-        <path d="M26 -9 L3 0 L26 9 Z" fill="#ffffff" stroke="#e78fc2" stroke-width="2.5" stroke-linejoin="round"/>
-        <circle cx="0" cy="0" r="6.5" fill="#ffd1ec" stroke="#e78fc2" stroke-width="2"/>
+      <g transform="translate(196,50) rotate(-6)">
+        <path d="M-26 -8 L-3 0 L-26 8 Z" fill="var(--paper)" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M26 -8 L3 0 L26 8 Z" fill="var(--paper)" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/>
+        <circle cx="0" cy="0" r="6" fill="var(--paper)" stroke="var(--ink)" stroke-width="3"/>
       </g>
 
-      <path d="M94 140 C104 130 120 130 130 138" stroke="#6b4a26" stroke-width="4" stroke-linecap="round" fill="none"/>
-      <path d="M206 140 C196 130 180 130 170 138" stroke="#6b4a26" stroke-width="4" stroke-linecap="round" fill="none"/>
+      <path d="M92 130 C102 122 122 122 132 130" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round" fill="none" opacity=".85"/>
 
       <g transform="translate(112,160)">
-        <path d="M0,-12 L3.4,-3.4 L12,0 L3.4,3.4 L0,12 L-3.4,3.4 L-12,0 L-3.4,-3.4 Z" fill="#3a2a2a"/>
-        <circle cx="-2.5" cy="-3.5" r="2.2" fill="#fff"/>
+        <path d="M-30 -20 L-6 -34 M-20 -22 L2 -32 M-8 -20 L14 -28" stroke="var(--ink)" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+        <path d="M-20 2 C-14 -10 10 -12 20 0 C10 10 -12 12 -20 2 Z" fill="#fff" stroke="var(--ink)" stroke-width="3.2"/>
+        <circle cx="2" cy="0" r="10.5" fill="#3a2a22"/>
+        <circle cx="-2" cy="-4" r="2.8" fill="#fff"/>
+        <circle cx="5" cy="4" r="1.5" fill="#fff"/>
       </g>
-      <g transform="translate(188,160)">
-        <path d="M0,-12 L3.4,-3.4 L12,0 L3.4,3.4 L0,12 L-3.4,3.4 L-12,0 L-3.4,-3.4 Z" fill="#3a2a2a"/>
-        <circle cx="2.5" cy="-3.5" r="2.2" fill="#fff"/>
+      <g transform="translate(196,162)">
+        <path d="M14 -18 L-8 -30" stroke="var(--ink)" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+        <path d="M-18 0 C-8 10 12 10 20 -3" fill="none" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/>
+        <path d="M18 -6 L26 -12" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>
       </g>
 
-      <ellipse cx="88" cy="194" rx="15" ry="8" fill="var(--blush)" opacity="0.6"/>
-      <ellipse cx="212" cy="194" rx="15" ry="8" fill="var(--blush)" opacity="0.6"/>
+      <path d="M148 172 L152 180" stroke="var(--ink)" stroke-width="2.3" stroke-linecap="round" fill="none" opacity=".6"/>
 
-      <g id="${mouthId}">
-        <ellipse cx="150" cy="208" rx="27" ry="20" fill="var(--lip-dark)"/>
-        <ellipse cx="150" cy="202" rx="22" ry="13" fill="var(--lip)"/>
+      <g id="${mouthId}" class="mouth-group">
+        <g class="mouth-closed">
+          <path d="M126 206 C137 217 163 217 174 206" fill="none" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/>
+          <path d="M135 211 L147 215" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" opacity=".7"/>
+        </g>
+        <g class="mouth-open">
+          <path d="M117 195 C129 186 171 186 183 195 C179 227 121 227 117 195 Z" fill="var(--ink)"/>
+          <ellipse cx="150" cy="219" rx="15" ry="8" fill="var(--tongue)"/>
+          <path d="M123 199 C133 205 167 205 177 199" fill="none" stroke="var(--paper)" stroke-width="2" stroke-linecap="round" opacity=".55"/>
+        </g>
       </g>
     `;
   }
@@ -586,9 +597,10 @@
     var plateEl = el._plateEl;
     el.classList.add("eaten");
     playChew();
-    mouthGroup.classList.remove("chomp");
-    void mouthGroup.offsetWidth;
-    mouthGroup.classList.add("chomp");
+    mouthGroup.classList.add("chewing");
+    pendingTimers.push(setTimeout(function(){
+      mouthGroup.classList.remove("chewing");
+    }, 280));
     burstParticles(atX, atY);
     eatenInStage++;
     updateHud();
