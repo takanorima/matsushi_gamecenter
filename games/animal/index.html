@@ -211,17 +211,19 @@
   }
 
   .flying-food {
-    position: absolute;
-    left: 50%;
-    bottom: 92px;
+    position: fixed;
+    left: 0;
+    top: 0;
     font-size: 1.7rem;
-    transform: translateX(-50%);
-    animation: flyUp .6s ease-out forwards;
+    line-height: 1;
     pointer-events: none;
+    z-index: 5;
+    animation: suckIn .4s cubic-bezier(.5, 0, .75, 0) forwards;
   }
-  @keyframes flyUp {
-    0%   { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
-    100% { transform: translateX(-50%) translateY(-190px) scale(.4); opacity: 0; }
+  @keyframes suckIn {
+    0%   { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    65%  { opacity: 1; }
+    100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.1); opacity: 0; }
   }
 
   .progress-label {
@@ -1041,10 +1043,22 @@
   }
 
   function spawnFlyingFood(emoji) {
+    var selectedBtn = foodRow.querySelector(".food-btn.selected");
+    var startRect = selectedBtn ? selectedBtn.getBoundingClientRect() : feedKeyIndicator.getBoundingClientRect();
+    var mouthRect = animalEl.getBoundingClientRect();
+    var startX = startRect.left + startRect.width / 2;
+    var startY = startRect.top + startRect.height / 2;
+    var mouthX = mouthRect.left + mouthRect.width / 2;
+    var mouthY = mouthRect.top + mouthRect.height * 0.6;
+
     var f = document.createElement("span");
     f.className = "flying-food";
     f.textContent = emoji;
-    game.appendChild(f);
+    f.style.left = startX + "px";
+    f.style.top = startY + "px";
+    f.style.setProperty("--dx", (mouthX - startX) + "px");
+    f.style.setProperty("--dy", (mouthY - startY) + "px");
+    document.body.appendChild(f);
     f.addEventListener("animationend", function () { f.remove(); });
   }
 
