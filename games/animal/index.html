@@ -19,6 +19,10 @@
     --border: #d5e3ff;
     --border-strong: #b7cdfa;
     --accent: #ff9f6b;
+    --sky: #d6efff;
+    --sky-deep: #bfe4ff;
+    --grass: #c3edc7;
+    --grass-deep: #9fd9a6;
     --font-body: "Hiragino Maru Gothic ProN", "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic Medium", "Yu Gothic", "Noto Sans JP", "Meiryo", sans-serif;
   }
 
@@ -36,6 +40,10 @@
       --border: #333c5c;
       --border-strong: #4a557f;
       --accent: #ffb385;
+      --sky: #223354;
+      --sky-deep: #1a2842;
+      --grass: #234b32;
+      --grass-deep: #1a3a26;
     }
   }
   :root[data-theme="dark"] {
@@ -51,6 +59,10 @@
     --border: #333c5c;
     --border-strong: #4a557f;
     --accent: #ffb385;
+    --sky: #223354;
+    --sky-deep: #1a2842;
+    --grass: #234b32;
+    --grass-deep: #1a3a26;
   }
 
   * { box-sizing: border-box; }
@@ -457,6 +469,55 @@
     background: linear-gradient(180deg, var(--sub), var(--main));
   }
 
+  .room-scene {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    border-radius: 14px;
+    padding: 1rem .75rem .5rem;
+    background:
+      linear-gradient(var(--sky), var(--sky) 62%, var(--grass) 62%, var(--grass-deep));
+  }
+  .room-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: flex-start;
+    gap: .3rem .2rem;
+  }
+  .room-cell {
+    width: 4.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: .3rem;
+  }
+  .room-cell .room-emoji {
+    font-size: 2.1rem;
+    line-height: 1;
+    animation: roomBob 2.6s ease-in-out infinite;
+  }
+  .room-cell .room-name {
+    margin-top: .2rem;
+    font-size: .62rem;
+    color: var(--ink-soft);
+    text-align: center;
+    line-height: 1.15;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
+  }
+  @keyframes roomBob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-7px); }
+  }
+  .room-empty {
+    width: 100%;
+    text-align: center;
+    color: var(--ink-soft);
+    padding: 2.5rem 1rem;
+    font-size: .9rem;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
+  }
+
   .confetti {
     position: fixed;
     top: -2rem;
@@ -500,6 +561,7 @@
     <span class="stat-pill">Lv. <strong id="levelValue">1</strong></span>
     <span class="stat-pill">📖 <strong id="collectedCount">0</strong> / 120</span>
     <button type="button" class="zukan-btn" id="zukanBtn">図鑑をみる</button>
+    <button type="button" class="zukan-btn" id="roomBtn">🏠 おへやをみる</button>
   </div>
 
   <main class="card" id="game">
@@ -548,6 +610,19 @@
       <button type="button" class="zukan-close" id="zukanClose" aria-label="とじる">✕</button>
     </div>
     <div class="zukan-grid" id="zukanGrid"></div>
+  </div>
+</div>
+
+<div class="zukan-overlay" id="roomOverlay" hidden>
+  <div class="zukan-card">
+    <div class="zukan-head">
+      <h2>どうぶつの おへや</h2>
+      <span id="roomCount"></span>
+      <button type="button" class="zukan-close" id="roomClose" aria-label="とじる">✕</button>
+    </div>
+    <div class="room-scene" id="roomScene">
+      <div class="room-grid" id="roomGrid"></div>
+    </div>
   </div>
 </div>
 
@@ -719,6 +794,11 @@
   var zukanGrid = document.getElementById("zukanGrid");
   var zukanCount = document.getElementById("zukanCount");
   var zukanClose = document.getElementById("zukanClose");
+  var roomBtn = document.getElementById("roomBtn");
+  var roomOverlay = document.getElementById("roomOverlay");
+  var roomGrid = document.getElementById("roomGrid");
+  var roomCount = document.getElementById("roomCount");
+  var roomClose = document.getElementById("roomClose");
 
   var level = 1;
   var totalFeeds = 0;
@@ -934,6 +1014,24 @@
     zukanGrid.innerHTML = html;
   }
 
+  function renderRoom() {
+    roomCount.textContent = collectedCount + " / " + ANIMALS.length + " なかま";
+    if (collectedCount === 0) {
+      roomGrid.innerHTML = '<p class="room-empty">まだ だれも いないよ。<br>えさをあげて なかまを ふやそう!</p>';
+      return;
+    }
+    var html = "";
+    for (var i = 0; i < ANIMALS.length; i++) {
+      if (!collected[i]) continue;
+      var delay = ((i * 7) % 12) * 0.2;
+      html += '<div class="room-cell">' +
+        '<span class="room-emoji" style="animation-delay:' + delay + 's">' + ANIMALS[i].e + '</span>' +
+        '<span class="room-name">' + ANIMALS[i].n + '</span>' +
+        '</div>';
+    }
+    roomGrid.innerHTML = html;
+  }
+
   function reset() {
     level = 1;
     totalFeeds = 0;
@@ -953,9 +1051,16 @@
   zukanClose.addEventListener("click", function () {
     zukanOverlay.hidden = true;
   });
+  roomBtn.addEventListener("click", function () {
+    renderRoom();
+    roomOverlay.hidden = false;
+  });
+  roomClose.addEventListener("click", function () {
+    roomOverlay.hidden = true;
+  });
   restartBtn.addEventListener("click", reset);
   window.addEventListener("keydown", function (e) {
-    if (cleared || zukanOverlay.hidden === false) return;
+    if (cleared || zukanOverlay.hidden === false || roomOverlay.hidden === false) return;
     if (e.key === "x" || e.key === "X") {
       feedKeyIndicator.classList.remove("pressed");
       void feedKeyIndicator.offsetWidth;
