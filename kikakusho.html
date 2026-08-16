@@ -136,6 +136,34 @@
   }
   button.print-btn.submit-btn:hover { color: var(--accent-ink); filter: brightness(1.06); }
 
+  .inapp-warning {
+    display: none;
+    gap: 0.75rem;
+    align-items: flex-start;
+    background: color-mix(in srgb, #d64545 10%, var(--surface));
+    border: 1px solid color-mix(in srgb, #d64545 40%, var(--border-strong));
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+  .inapp-warning.show { display: flex; }
+  .inapp-warning svg { flex: none; width: 1.4rem; height: 1.4rem; color: #d64545; margin-top: 0.1rem; }
+  .inapp-warning p { margin: 0 0 0.6rem; font-size: 0.9rem; }
+  .inapp-warning p:last-child { margin-bottom: 0; }
+  .inapp-warning .copy-link-btn {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    color: var(--ink);
+    border-radius: 8px;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+    margin-bottom: 0.6rem;
+  }
+  .inapp-warning .copy-link-btn:hover { border-color: #d64545; color: #d64545; }
+
   .save-note {
     display: flex;
     align-items: center;
@@ -409,6 +437,7 @@
     button.print-btn { display: none; }
     .step { box-shadow: none; break-inside: avoid; border-color: #ccc; }
     .intro-note { background: #fff; }
+    .inapp-warning { display: none; }
   }
 </style>
 </head>
@@ -439,6 +468,15 @@
       </button>
     </div>
   </header>
+
+  <div class="inapp-warning" id="inappWarning">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9L2.7 18a1.6 1.6 0 0 0 1.4 2.4h16a1.6 1.6 0 0 0 1.4-2.4L13.7 3.9a1.6 1.6 0 0 0-2.8 0Z"/></svg>
+    <div>
+      <p>いま、アプリの なかの ブラウザで ひらいているよ。この ままだと『ていしゅつ』ボタンが うまく うごかないことが あるよ。</p>
+      <button class="copy-link-btn" type="button">リンクを コピーする</button>
+      <p>コピーしたら、いつもの ブラウザ(Safariや Chromeなど)に はりつけて ひらいてね。みぎうえの メニュー(⋮や…)から ブラウザで ひらく そうさが あれば、それを つかっても いいよ。</p>
+    </div>
+  </div>
 
   <div class="who-when">
     <label>なまえ <input type="text" placeholder="かいてね" data-key="who-name"></label>
@@ -568,6 +606,46 @@
 <script>
 (function () {
   var STORAGE_PREFIX = 'kikakusho:v1:';
+
+  function isInAppBrowser() {
+    var ua = navigator.userAgent || '';
+    return /Line\//i.test(ua) || /FBAN|FBAV/i.test(ua) || /Instagram/i.test(ua) || /MicroMessenger/i.test(ua) || /KAKAOTALK/i.test(ua) || /Twitter/i.test(ua);
+  }
+
+  function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function (resolve, reject) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+      ok ? resolve() : reject();
+    });
+  }
+
+  var inAppBrowser = isInAppBrowser();
+  if (inAppBrowser) {
+    var warnEl = document.getElementById('inappWarning');
+    if (warnEl) warnEl.classList.add('show');
+  }
+  var copyLinkBtn = document.querySelector('.copy-link-btn');
+  if (copyLinkBtn) {
+    copyLinkBtn.addEventListener('click', function () {
+      copyToClipboard(location.href).then(function () {
+        alert('コピーしたよ!ブラウザに はりつけて ひらいてね。');
+      }, function () {
+        alert('コピーできなかったよ。がめんの うえの ほうに ある アドレスを ながおしして コピーしてね。');
+      });
+    });
+  }
 
   function storageGet(key) {
     try { return localStorage.getItem(key); } catch (e) { return null; }
@@ -788,6 +866,10 @@
   var submitBtn = document.querySelector('.submit-btn');
   if (submitBtn) {
     submitBtn.addEventListener('click', function () {
+      if (inAppBrowser) {
+        alert('いまの ブラウザだと ほぞんが うまく いかないことが あるよ。うえの「リンクを コピーする」で いつもの ブラウザに はりつけて ひらいてから、もういちど ためしてね。');
+        return;
+      }
       var snap = collectSubmission();
       var html = buildSubmissionHtml(snap.data, snap.drawings);
       var blob = new Blob([html], { type: 'text/html' });
