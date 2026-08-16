@@ -192,19 +192,22 @@
     justify-content: center;
   }
   .animal {
+    --grow-scale: .55;
     font-size: 6rem;
     line-height: 1;
     display: inline-block;
     transform-origin: 50% 80%;
+    transform: scale(var(--grow-scale));
+    transition: transform .35s ease;
   }
   .animal.bounce {
     animation: chomp .5s ease;
   }
   @keyframes chomp {
-    0%   { transform: scale(1) rotate(0); }
-    30%  { transform: scale(1.18) rotate(-4deg); }
-    60%  { transform: scale(0.94) rotate(3deg); }
-    100% { transform: scale(1) rotate(0); }
+    0%   { transform: scale(var(--grow-scale)) rotate(0); }
+    30%  { transform: scale(calc(var(--grow-scale) * 1.18)) rotate(-4deg); }
+    60%  { transform: scale(calc(var(--grow-scale) * 0.94)) rotate(3deg); }
+    100% { transform: scale(var(--grow-scale)) rotate(0); }
   }
 
   .flying-food {
@@ -470,15 +473,29 @@
   }
 
   .room-scene {
+    position: relative;
     flex: 1;
     min-height: 0;
+    overflow-x: hidden;
     overflow-y: auto;
     border-radius: 14px;
     padding: 1rem .75rem .5rem;
     background:
       linear-gradient(var(--sky), var(--sky) 62%, var(--grass) 62%, var(--grass-deep));
   }
+  .room-cloud {
+    position: absolute;
+    font-size: 1.8rem;
+    opacity: .8;
+    pointer-events: none;
+    animation: cloudDrift linear infinite;
+  }
+  @keyframes cloudDrift {
+    0%   { transform: translateX(-3rem); }
+    100% { transform: translateX(calc(100% + 3rem)); }
+  }
   .room-grid {
+    position: relative;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -495,7 +512,9 @@
   .room-cell .room-emoji {
     font-size: 2.1rem;
     line-height: 1;
-    animation: roomBob 2.6s ease-in-out infinite;
+    display: inline-block;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
   }
   .room-cell .room-name {
     margin-top: .2rem;
@@ -505,9 +524,17 @@
     line-height: 1.15;
     text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
   }
-  @keyframes roomBob {
-    0%, 100% { transform: translateY(0); }
-    50%      { transform: translateY(-7px); }
+  @keyframes roomBobA {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50%      { transform: translate(0, -7px) rotate(0deg); }
+  }
+  @keyframes roomBobB {
+    0%, 100% { transform: translate(0, 0) rotate(-5deg); }
+    50%      { transform: translate(3px, -5px) rotate(5deg); }
+  }
+  @keyframes roomBobC {
+    0%, 100% { transform: translate(0, 0) rotate(4deg); }
+    50%      { transform: translate(-3px, -6px) rotate(-4deg); }
   }
   .room-empty {
     width: 100%;
@@ -621,6 +648,7 @@
       <button type="button" class="zukan-close" id="roomClose" aria-label="とじる">✕</button>
     </div>
     <div class="room-scene" id="roomScene">
+      <div class="room-clouds" id="roomClouds" aria-hidden="true"></div>
       <div class="room-grid" id="roomGrid"></div>
     </div>
   </div>
@@ -797,6 +825,7 @@
   var roomBtn = document.getElementById("roomBtn");
   var roomOverlay = document.getElementById("roomOverlay");
   var roomGrid = document.getElementById("roomGrid");
+  var roomClouds = document.getElementById("roomClouds");
   var roomCount = document.getElementById("roomCount");
   var roomClose = document.getElementById("roomClose");
 
@@ -809,6 +838,8 @@
   var currentIsNew = false;
   var cleared = false;
   var selectedFoodIndex = 0;
+  var MIN_GROW_SCALE = .55;
+  var MAX_GROW_SCALE = 1.15;
 
   function isCleared() {
     return collectedCount >= ANIMALS.length;
@@ -856,7 +887,10 @@
       var need = feedsNeededForLevel(level);
       var remain = need - feedsInEncounter;
       progressLabel.innerHTML = "このこに あと <strong>" + remain + "</strong> かい";
-      progressFill.style.width = Math.round((feedsInEncounter / need) * 100) + "%";
+      var progressRatio = feedsInEncounter / need;
+      progressFill.style.width = Math.round(progressRatio * 100) + "%";
+      var growScale = MIN_GROW_SCALE + (MAX_GROW_SCALE - MIN_GROW_SCALE) * progressRatio;
+      animalEl.style.setProperty("--grow-scale", growScale.toFixed(3));
     }
 
     renderFoodRow();
@@ -920,6 +954,7 @@
     clone.textContent = emoji;
     clone.style.left = startX + "px";
     clone.style.top = startY + "px";
+    clone.style.fontSize = Math.max(startRect.width, startRect.height) + "px";
     clone.style.setProperty("--dx", (endX - startX) + "px");
     clone.style.setProperty("--dy", (endY - startY) + "px");
     document.body.appendChild(clone);
@@ -1014,6 +1049,22 @@
     zukanGrid.innerHTML = html;
   }
 
+  var ROOM_BOB_ANIMS = ["roomBobA", "roomBobB", "roomBobC"];
+
+  function setupRoomClouds() {
+    var clouds = [
+      { top: 6, duration: 26, delay: 0 },
+      { top: 20, duration: 34, delay: -14 },
+      { top: 12, duration: 30, delay: -22 }
+    ];
+    var html = "";
+    for (var i = 0; i < clouds.length; i++) {
+      html += '<span class="room-cloud" style="top:' + clouds[i].top + '%; animation-duration:' +
+        clouds[i].duration + 's; animation-delay:' + clouds[i].delay + 's;">☁️</span>';
+    }
+    roomClouds.innerHTML = html;
+  }
+
   function renderRoom() {
     roomCount.textContent = collectedCount + " / " + ANIMALS.length + " なかま";
     if (collectedCount === 0) {
@@ -1023,9 +1074,14 @@
     var html = "";
     for (var i = 0; i < ANIMALS.length; i++) {
       if (!collected[i]) continue;
-      var delay = ((i * 7) % 12) * 0.2;
+      var animName = ROOM_BOB_ANIMS[i % ROOM_BOB_ANIMS.length];
+      var duration = (2.2 + (i % 7) * 0.15).toFixed(2);
+      var delay = (-1 * ((i * 37) % 30) / 10).toFixed(2);
+      var style = "animation-name:" + animName +
+        "; animation-duration:" + duration + "s" +
+        "; animation-delay:" + delay + "s";
       html += '<div class="room-cell">' +
-        '<span class="room-emoji" style="animation-delay:' + delay + 's">' + ANIMALS[i].e + '</span>' +
+        '<span class="room-emoji" style="' + style + '">' + ANIMALS[i].e + '</span>' +
         '<span class="room-name">' + ANIMALS[i].n + '</span>' +
         '</div>';
     }
@@ -1074,6 +1130,7 @@
     }
   });
 
+  setupRoomClouds();
   startEncounter();
   render();
 })();
