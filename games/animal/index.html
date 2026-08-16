@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>動物育成ゲーム</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A6%81%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --main: #a7c6ff;
+    --main-ink: #1c2b52;
+    --sub: #cbf0ff;
+    --paper: #eef4ff;
+    --paper-line: rgba(70, 96, 160, 0.08);
+    --surface: #ffffff;
+    --ink: #24304d;
+    --ink-soft: #5c6a8c;
+    --ink-faint: #8a95b8;
+    --border: #d5e3ff;
+    --border-strong: #b7cdfa;
+    --accent: #ff9f6b;
+    --font-body: "Hiragino Maru Gothic ProN", "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic Medium", "Yu Gothic", "Noto Sans JP", "Meiryo", sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --main: #4d6bb0;
+      --main-ink: #eef4ff;
+      --sub: #2e4a63;
+      --paper: #171b2b;
+      --paper-line: rgba(255, 255, 255, 0.06);
+      --surface: #20263c;
+      --ink: #eef1fb;
+      --ink-soft: #a8b1d6;
+      --ink-faint: #6f78a0;
+      --border: #333c5c;
+      --border-strong: #4a557f;
+      --accent: #ffb385;
+    }
+  }
+  :root[data-theme="dark"] {
+    --main: #4d6bb0;
+    --main-ink: #eef4ff;
+    --sub: #2e4a63;
+    --paper: #171b2b;
+    --paper-line: rgba(255, 255, 255, 0.06);
+    --surface: #20263c;
+    --ink: #eef1fb;
+    --ink-soft: #a8b1d6;
+    --ink-faint: #6f78a0;
+    --border: #333c5c;
+    --border-strong: #4a557f;
+    --accent: #ffb385;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background:
+      linear-gradient(var(--paper-line) 1px, transparent 1px) 0 0 / 28px 28px,
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px) 0 0 / 28px 28px,
+      var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 30rem;
+    margin: 0 auto;
+    padding: 1.75rem 1.25rem 3rem;
+  }
+
+  header.top {
+    text-align: center;
+    margin-bottom: 1.25rem;
+  }
+  .eyebrow {
+    margin: 0 0 .2rem;
+    font-size: .8rem;
+    letter-spacing: .04em;
+    color: var(--ink-soft);
+  }
+  h1 {
+    margin: 0;
+    font-size: 1.6rem;
+  }
+  .credit {
+    margin: .3rem 0 0;
+    font-size: .85rem;
+    color: var(--ink-soft);
+  }
+
+  .card {
+    position: relative;
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 1.5rem 1.25rem 1.75rem;
+    text-align: center;
+    box-shadow: 0 12px 30px rgba(40, 60, 120, 0.1);
+  }
+
+  .stage-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--ink-soft);
+  }
+
+  .animal-stage {
+    margin: .5rem auto 1.1rem;
+    width: 11rem;
+    height: 11rem;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 38%, var(--sub), var(--main) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .animal {
+    font-size: 6rem;
+    line-height: 1;
+    display: inline-block;
+    transform-origin: 50% 80%;
+  }
+  .animal.bounce {
+    animation: chomp .5s ease;
+  }
+  @keyframes chomp {
+    0%   { transform: scale(1) rotate(0); }
+    30%  { transform: scale(1.18) rotate(-4deg); }
+    60%  { transform: scale(0.94) rotate(3deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+
+  .flying-meat {
+    position: absolute;
+    left: 50%;
+    bottom: 92px;
+    font-size: 1.7rem;
+    transform: translateX(-50%);
+    animation: flyUp .6s ease-out forwards;
+    pointer-events: none;
+  }
+  @keyframes flyUp {
+    0%   { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateX(-50%) translateY(-190px) scale(.4); opacity: 0; }
+  }
+
+  .progress-label {
+    margin: 0 0 .45rem;
+    font-size: .95rem;
+    color: var(--ink-soft);
+  }
+  .progress-label strong {
+    color: var(--ink);
+    font-size: 1.1rem;
+  }
+  .progress-bar {
+    height: .8rem;
+    border-radius: 999px;
+    background: var(--sub);
+    border: 1px solid var(--border-strong);
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--main), var(--accent));
+    border-radius: inherit;
+    transition: width .35s ease;
+  }
+
+  .total-feeds {
+    margin: .9rem 0 0;
+    font-size: .85rem;
+    color: var(--ink-faint);
+  }
+
+  .feed-btn {
+    margin-top: 1.25rem;
+    width: 100%;
+    font: inherit;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--main-ink);
+    background: linear-gradient(180deg, var(--sub), var(--main));
+    border: 1px solid var(--border-strong);
+    border-radius: 18px;
+    padding: 1rem;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform .1s ease, box-shadow .1s ease;
+    box-shadow: 0 6px 0 var(--border-strong);
+  }
+  .feed-btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 var(--border-strong);
+  }
+  .feed-btn:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .level-up-toast {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(.6);
+    background: var(--surface);
+    border: 2px solid var(--accent);
+    border-radius: 14px;
+    padding: .6rem 1.1rem;
+    font-weight: 700;
+    color: var(--accent);
+    opacity: 0;
+    pointer-events: none;
+    animation: popToast 1.1s ease forwards;
+    white-space: nowrap;
+  }
+  @keyframes popToast {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(.5); }
+    20%  { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    35%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    80%  { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%, -70%) scale(1); }
+  }
+
+  footer.note {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: .8rem;
+    color: var(--ink-faint);
+  }
+
+  .clear-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 26, 48, .55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    z-index: 10;
+  }
+  .clear-overlay[hidden] { display: none; }
+  .clear-card {
+    background: var(--surface);
+    border-radius: 22px;
+    padding: 2rem 1.5rem;
+    max-width: 22rem;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, .35);
+  }
+  .clear-emoji {
+    font-size: 3.2rem;
+    margin: 0 0 .4rem;
+  }
+  .clear-card h2 {
+    margin: 0 0 .5rem;
+    font-size: 1.6rem;
+  }
+  .clear-card p {
+    margin: 0 0 1.2rem;
+    color: var(--ink-soft);
+  }
+
+  .confetti {
+    position: fixed;
+    top: -2rem;
+    font-size: 1.5rem;
+    animation: confettiFall linear forwards;
+    pointer-events: none;
+    z-index: 11;
+  }
+  @keyframes confettiFall {
+    0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(340deg); opacity: .9; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <p class="eyebrow">🎮 まつしげーむせんたー</p>
+    <h1>動物育成ゲーム</h1>
+    <p class="credit">花乃子さんの企画をもとに制作</p>
+  </header>
+
+  <main class="card" id="game">
+    <p class="stage-name" id="stageName"></p>
+    <div class="animal-stage">
+      <span class="animal" id="animalEmoji"></span>
+    </div>
+
+    <div id="progressWrap">
+      <p class="progress-label" id="progressLabel"></p>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <p class="total-feeds">これまでにあげた かいすう: <strong id="totalFeeds">0</strong> かい</p>
+
+    <button type="button" class="feed-btn" id="feedBtn">🍖 えさをあげる</button>
+  </main>
+
+  <footer class="note">あそびかた: ボタンをタップ / クリック(キーボードでもOK)して、ライオンになるまで そだてよう</footer>
+</div>
+
+<div class="clear-overlay" id="clearOverlay" hidden>
+  <div class="clear-card">
+    <p class="clear-emoji">🦁🎉</p>
+    <h2>クリア!</h2>
+    <p>ライオンまで りっぱに そだてたね!</p>
+    <button type="button" class="feed-btn" id="restartBtn">もういちど あそぶ</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  var STAGES = [
+    { emoji: "🐱", name: "こねこ", need: 3 },
+    { emoji: "🐈", name: "ねこ", need: 4 },
+    { emoji: "🐯", name: "とら", need: 5 },
+    { emoji: "🦁", name: "ライオン", need: 0 }
+  ];
+
+  var game = document.getElementById("game");
+  var stageNameEl = document.getElementById("stageName");
+  var animalEl = document.getElementById("animalEmoji");
+  var progressWrap = document.getElementById("progressWrap");
+  var progressLabel = document.getElementById("progressLabel");
+  var progressFill = document.getElementById("progressFill");
+  var totalFeedsEl = document.getElementById("totalFeeds");
+  var feedBtn = document.getElementById("feedBtn");
+  var clearOverlay = document.getElementById("clearOverlay");
+  var restartBtn = document.getElementById("restartBtn");
+
+  var stageIndex = 0;
+  var feedsInStage = 0;
+  var totalFeeds = 0;
+
+  function isCleared() {
+    return stageIndex === STAGES.length - 1;
+  }
+
+  function render() {
+    var stage = STAGES[stageIndex];
+    stageNameEl.textContent = stage.name;
+    animalEl.textContent = stage.emoji;
+    totalFeedsEl.textContent = String(totalFeeds);
+
+    if (isCleared()) {
+      progressWrap.style.visibility = "hidden";
+      feedBtn.disabled = true;
+    } else {
+      progressWrap.style.visibility = "visible";
+      feedBtn.disabled = false;
+      var remain = stage.need - feedsInStage;
+      progressLabel.innerHTML = "つぎのレベルまで あと <strong>" + remain + "</strong> かい";
+      progressFill.style.width = Math.round((feedsInStage / stage.need) * 100) + "%";
+    }
+  }
+
+  function spawnFlyingMeat() {
+    var meat = document.createElement("span");
+    meat.className = "flying-meat";
+    meat.textContent = "🍖";
+    game.appendChild(meat);
+    meat.addEventListener("animationend", function () {
+      meat.remove();
+    });
+  }
+
+  function bounceAnimal() {
+    animalEl.classList.remove("bounce");
+    void animalEl.offsetWidth;
+    animalEl.classList.add("bounce");
+  }
+
+  function showLevelUpToast(text) {
+    var toast = document.createElement("div");
+    toast.className = "level-up-toast";
+    toast.textContent = text;
+    game.appendChild(toast);
+    toast.addEventListener("animationend", function () {
+      toast.remove();
+    });
+  }
+
+  function spawnConfetti() {
+    var pieces = ["🎉", "✨", "🦁", "⭐", "🍖"];
+    for (var i = 0; i < 24; i++) {
+      (function (i) {
+        var el = document.createElement("span");
+        el.className = "confetti";
+        el.textContent = pieces[i % pieces.length];
+        el.style.left = Math.random() * 100 + "vw";
+        el.style.animationDuration = (2 + Math.random() * 1.5) + "s";
+        el.style.animationDelay = (Math.random() * .4) + "s";
+        document.body.appendChild(el);
+        setTimeout(function () { el.remove(); }, 4000);
+      })(i);
+    }
+  }
+
+  function showClear() {
+    clearOverlay.hidden = false;
+    spawnConfetti();
+  }
+
+  function feed() {
+    if (isCleared()) return;
+
+    totalFeeds++;
+    feedsInStage++;
+    spawnFlyingMeat();
+    bounceAnimal();
+
+    var stage = STAGES[stageIndex];
+    if (feedsInStage >= stage.need) {
+      feedsInStage = 0;
+      stageIndex++;
+      if (isCleared()) {
+        render();
+        setTimeout(showClear, 500);
+        return;
+      }
+      showLevelUpToast(STAGES[stageIndex].name + " に レベルアップ!");
+    }
+
+    render();
+  }
+
+  function reset() {
+    stageIndex = 0;
+    feedsInStage = 0;
+    totalFeeds = 0;
+    clearOverlay.hidden = true;
+    render();
+  }
+
+  feedBtn.addEventListener("click", feed);
+  restartBtn.addEventListener("click", reset);
+
+  render();
+})();
+</script>
+</body>
+</html>
