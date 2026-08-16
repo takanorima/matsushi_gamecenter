@@ -339,7 +339,7 @@
 
   /* ------------------------------------------------------------
      効果音
-     咀嚼音は assets/sfx/chew.mp3 を用意すればそれを再生する。
+     咀嚼音は assets/sfx/chew.wav を用意すればそれを再生する。
      まだファイルが無い場合はWebAudioで作った音で代用する。
   ------------------------------------------------------------ */
   var audioCtx = null;
@@ -376,7 +376,7 @@
     notes.forEach(function(f,i){ tone(f,f,0.22,i*0.12,0.28,"triangle"); });
   }
 
-  var CHEW_SRC = "assets/sfx/chew.mp3";
+  var CHEW_SRC = "assets/sfx/chew.wav";
   var chewAudio = new Audio(CHEW_SRC);
   chewAudio.preload = "auto";
   var chewAudioReady = false;
