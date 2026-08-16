@@ -496,26 +496,69 @@
     0%   { transform: translateX(-3rem); }
     100% { transform: translateX(calc(100% + 3rem)); }
   }
-  .room-grid {
+  .room-deco-row {
     position: relative;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    align-content: flex-start;
-    gap: .3rem .2rem;
+    gap: .3rem;
+    margin-bottom: .5rem;
   }
-  .room-cell {
+  .room-deco-item {
+    width: 2.6rem;
+    height: 2.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.7rem;
+    animation: decoSway 4s ease-in-out infinite;
+  }
+  @keyframes decoSway {
+    0%, 100% { transform: rotate(-3deg); }
+    50%      { transform: rotate(3deg); }
+  }
+
+  .room-grid {
     position: relative;
-    width: 4.2rem;
     display: flex;
     flex-direction: column;
+    gap: .1rem;
+  }
+  .room-lane {
+    position: relative;
+    height: 3.3rem;
+  }
+  .room-walker {
+    position: absolute;
+    top: 0;
+    display: inline-flex;
     align-items: center;
-    padding-top: .3rem;
+    gap: .3rem;
+    white-space: nowrap;
+    animation-name: walkLane;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+  }
+  .room-walker .room-emoji {
+    font-size: 2rem;
+    line-height: 1;
+    display: inline-block;
+  }
+  .room-walker .room-name {
+    font-size: .62rem;
+    color: var(--ink-soft);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
+  }
+  @keyframes walkLane {
+    0%   { left: 1%; }
+    100% { left: 72%; }
   }
   .room-wish {
     position: absolute;
-    top: -.2rem;
-    right: .2rem;
+    top: -1rem;
+    left: 50%;
+    transform: translateX(-50%);
     width: 1.9rem;
     height: 1.9rem;
     background: var(--surface);
@@ -536,40 +579,13 @@
     animation: wishShake .4s ease;
   }
   @keyframes wishFloat {
-    0%, 100% { transform: translateY(0); }
-    50%      { transform: translateY(-4px); }
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50%      { transform: translateX(-50%) translateY(-4px); }
   }
   @keyframes wishShake {
-    0%, 100% { transform: translateX(0); }
-    25%      { transform: translateX(-4px); }
-    75%      { transform: translateX(4px); }
-  }
-  .room-cell .room-emoji {
-    font-size: 2.1rem;
-    line-height: 1;
-    display: inline-block;
-    animation-timing-function: ease-in-out;
-    animation-iteration-count: infinite;
-  }
-  .room-cell .room-name {
-    margin-top: .2rem;
-    font-size: .62rem;
-    color: var(--ink-soft);
-    text-align: center;
-    line-height: 1.15;
-    text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
-  }
-  @keyframes roomBobA {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    50%      { transform: translate(0, -7px) rotate(0deg); }
-  }
-  @keyframes roomBobB {
-    0%, 100% { transform: translate(0, 0) rotate(-5deg); }
-    50%      { transform: translate(3px, -5px) rotate(5deg); }
-  }
-  @keyframes roomBobC {
-    0%, 100% { transform: translate(0, 0) rotate(4deg); }
-    50%      { transform: translate(-3px, -6px) rotate(-4deg); }
+    0%, 100% { transform: translateX(-50%); }
+    25%      { transform: translateX(calc(-50% - 4px)); }
+    75%      { transform: translateX(calc(-50% + 4px)); }
   }
   .room-empty {
     width: 100%;
@@ -578,15 +594,6 @@
     padding: 2.5rem 1rem;
     font-size: .9rem;
     text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
-  }
-  .room-cell.room-deco .room-emoji {
-    font-size: 1.9rem;
-    animation-name: decoSway;
-    animation-duration: 4s;
-  }
-  @keyframes decoSway {
-    0%, 100% { transform: rotate(-3deg); }
-    50%      { transform: rotate(3deg); }
   }
 
   .room-shop {
@@ -744,6 +751,7 @@
     </div>
     <div class="room-scene" id="roomScene">
       <div class="room-clouds" id="roomClouds" aria-hidden="true"></div>
+      <div class="room-deco-row" id="roomDecoShelf"></div>
       <div class="room-grid" id="roomGrid"></div>
     </div>
     <div class="room-shop">
@@ -924,6 +932,7 @@
   var roomBtn = document.getElementById("roomBtn");
   var roomOverlay = document.getElementById("roomOverlay");
   var roomGrid = document.getElementById("roomGrid");
+  var roomDecoShelf = document.getElementById("roomDecoShelf");
   var roomClouds = document.getElementById("roomClouds");
   var roomCount = document.getElementById("roomCount");
   var roomClose = document.getElementById("roomClose");
@@ -1181,8 +1190,6 @@
     zukanGrid.innerHTML = html;
   }
 
-  var ROOM_BOB_ANIMS = ["roomBobA", "roomBobB", "roomBobC"];
-
   function setupRoomClouds() {
     var clouds = [
       { top: 6, duration: 26, delay: 0 },
@@ -1278,27 +1285,28 @@
   function renderRoom() {
     roomCount.textContent = collectedCount + " / " + ANIMALS.length + " なかま";
     if (collectedCount === 0) {
+      roomDecoShelf.innerHTML = "";
       roomGrid.innerHTML = '<p class="room-empty">まだ だれも いないよ。<br>えさをあげて なかまを ふやそう!</p>';
       return;
     }
-    var html = "";
+
+    var decoHtml = "";
     for (var d = 0; d < DECORATIONS.length; d++) {
       var owned = decorations[DECORATIONS[d].id] || 0;
       for (var k = 0; k < owned; k++) {
         var decoDelay = (-1 * ((d * 53 + k * 17) % 40) / 10).toFixed(2);
-        html += '<div class="room-cell room-deco">' +
-          '<span class="room-emoji" style="animation-delay:' + decoDelay + 's">' + DECORATIONS[d].e + '</span>' +
-          '</div>';
+        decoHtml += '<span class="room-deco-item" style="animation-delay:' + decoDelay + 's">' +
+          DECORATIONS[d].e + '</span>';
       }
     }
+    roomDecoShelf.innerHTML = decoHtml;
+
+    var html = "";
     for (var i = 0; i < ANIMALS.length; i++) {
       if (!collected[i]) continue;
-      var animName = ROOM_BOB_ANIMS[i % ROOM_BOB_ANIMS.length];
-      var duration = (2.2 + (i % 7) * 0.15).toFixed(2);
-      var delay = (-1 * ((i * 37) % 30) / 10).toFixed(2);
-      var style = "animation-name:" + animName +
-        "; animation-duration:" + duration + "s" +
-        "; animation-delay:" + delay + "s";
+      var duration = (5 + (i % 8) * 0.8).toFixed(2);
+      var delay = (-1 * ((i * 37) % 50) / 10).toFixed(2);
+      var style = "animation-duration:" + duration + "s; animation-delay:" + delay + "s";
 
       var wishHtml = "";
       if (wishes[i]) {
@@ -1313,10 +1321,11 @@
         }
       }
 
-      html += '<div class="room-cell">' + wishHtml +
-        '<span class="room-emoji" style="' + style + '">' + ANIMALS[i].e + '</span>' +
+      html += '<div class="room-lane">' +
+        '<div class="room-walker" style="' + style + '">' + wishHtml +
+        '<span class="room-emoji">' + ANIMALS[i].e + '</span>' +
         '<span class="room-name">' + ANIMALS[i].n + '</span>' +
-        '</div>';
+        '</div></div>';
     }
     roomGrid.innerHTML = html;
 
