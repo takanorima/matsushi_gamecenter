@@ -15,8 +15,11 @@
     --lip:#ff7a52;
     --lip-dark:#e85f3a;
     --blush:#ff9ec2;
+    --top:#ff9ecb;
+    --top-dark:#f07ab3;
     --ink:#4a3b3b;
-    --card:#fffaf6;
+    --wood:#c68a52;
+    --wood-dark:#96602f;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{
@@ -51,15 +54,16 @@
     justify-content:center;
     text-align:center;
     padding:1.5rem;
+    z-index:1;
   }
   .screen[hidden]{display:none;}
 
-  /* ---- ふわふわ背景の飾り ---- */
-  .sparkle{
+  /* ---- ふわふわ背景の飾り(キラキラ+くだもの) ---- */
+  .bgdeco{
     position:fixed;
     pointer-events:none;
-    font-size:1.4rem;
-    opacity:.55;
+    font-size:1.5rem;
+    opacity:.5;
     animation:float 9s ease-in-out infinite;
     z-index:0;
   }
@@ -69,32 +73,38 @@
     100%{transform:translateY(0) rotate(0deg);}
   }
 
-  /* ---- タイトル画面 ---- */
-  #titleScreen h1{
-    font-size:2.1rem;
-    margin:0 0 .3rem;
+  /* ---- タイトル/クリア共通の見出し ---- */
+  h1,h2{
     color:#c9548a;
     text-shadow:0 2px 0 #fff, 0 4px 10px rgba(200,90,140,.25);
+    margin:0 0 .3rem;
   }
-  #titleScreen p{
-    margin:0 0 1.6rem;
+  h1{font-size:2rem;}
+  h2{font-size:2.1rem;}
+  .screen p{
+    margin:0 0 1.4rem;
     font-size:1rem;
     color:#7c5a6b;
   }
   .gal-preview{
-    width:180px;
+    width:min(58vw,240px);
     height:auto;
     filter:drop-shadow(0 8px 14px rgba(180,110,60,.25));
-    margin-bottom:1.4rem;
+    margin-bottom:1.2rem;
+  }
+  .stage-hint{
+    font-size:.85rem;
+    color:#a5789a;
+    margin:-.8rem 0 1.2rem;
   }
   button.big{
-    font-size:1.3rem;
+    font-size:1.25rem;
     font-weight:bold;
     color:#fff;
     background:linear-gradient(135deg,#ff9ecb,#ff7ab0);
     border:none;
     border-radius:999px;
-    padding:.9rem 2.4rem;
+    padding:.9rem 2.2rem;
     box-shadow:0 6px 0 #e0568f, 0 10px 18px rgba(224,86,143,.35);
     cursor:pointer;
     transition:transform .08s ease;
@@ -105,18 +115,30 @@
   }
 
   /* ---- ゲーム画面 ---- */
+  #gameScreen{padding:0;justify-content:flex-start;}
   #hud{
     position:fixed;
     top:0;left:0;right:0;
     display:flex;
+    flex-wrap:wrap;
     align-items:center;
     justify-content:center;
-    gap:.7rem;
-    padding:.8rem 1rem;
+    gap:.4rem .6rem;
+    padding:.7rem 1rem;
     z-index:5;
   }
+  #hudStage,#hudCount{
+    font-weight:bold;
+    color:#c9548a;
+    background:#fff;
+    border-radius:999px;
+    padding:.15rem .7rem;
+    font-size:.9rem;
+    box-shadow:0 2px 6px rgba(120,80,100,.15);
+    white-space:nowrap;
+  }
   #hudBar{
-    width:min(70vw,320px);
+    width:min(56vw,260px);
     height:1.1rem;
     background:rgba(255,255,255,.6);
     border-radius:999px;
@@ -131,32 +153,22 @@
     transition:width .35s cubic-bezier(.3,1.6,.5,1);
     border-radius:999px;
   }
-  #hudCount{
-    font-weight:bold;
-    color:#c9548a;
-    background:#fff;
-    border-radius:999px;
-    padding:.15rem .7rem;
-    font-size:.95rem;
-    box-shadow:0 2px 6px rgba(120,80,100,.15);
-    white-space:nowrap;
-  }
 
   #galWrap{
     position:fixed;
     left:50%;
-    bottom:0;
-    transform:translateX(-50%);
-    width:min(72vw,320px);
+    top:46%;
+    transform:translate(-50%,-52%);
+    width:min(86vw,420px);
     pointer-events:none;
     z-index:2;
     animation:bob 3.2s ease-in-out infinite;
   }
   @keyframes bob{
-    0%,100%{transform:translateX(-50%) translateY(0);}
-    50%{transform:translateX(-50%) translateY(-6px);}
+    0%,100%{transform:translate(-50%,-52%);}
+    50%{transform:translate(-50%,calc(-52% - 6px));}
   }
-  #galSvg{width:100%;height:auto;display:block;}
+  #galSvg{width:100%;height:auto;display:block;overflow:visible;}
   #mouthGroup{
     transform-box:fill-box;
     transform-origin:center;
@@ -172,14 +184,39 @@
     100%{transform:scaleY(1);}
   }
 
+  /* ---- テーブルとお皿 ---- */
+  #tableWrap{
+    position:fixed;
+    left:0;right:0;bottom:0;
+    height:clamp(96px,15vh,140px);
+    background:linear-gradient(180deg,var(--wood),var(--wood-dark) 75%);
+    border-top:6px solid #7f4f24;
+    box-shadow:0 -8px 18px rgba(70,40,10,.25), inset 0 6px 10px rgba(255,255,255,.12);
+    z-index:4;
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-evenly;
+    padding:10px 8px 0;
+  }
+  .plate{
+    width:clamp(42px,16vw,66px);
+    height:clamp(42px,16vw,66px);
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#ffffff,#f1eee8 60%,#d9d3c6 100%);
+    border:3px solid #fff;
+    box-shadow:0 5px 8px rgba(60,30,5,.3), inset 0 0 0 6px rgba(0,0,0,.05);
+    margin-top:-16px;
+    flex-shrink:0;
+  }
+
   #foodLayer{
     position:fixed;
     inset:0;
-    z-index:3;
+    z-index:6;
   }
   .food{
     position:fixed;
-    font-size:3rem;
+    font-size:clamp(2rem,8vw,2.9rem);
     line-height:1;
     filter:drop-shadow(0 6px 8px rgba(120,80,60,.25));
     cursor:grab;
@@ -192,6 +229,7 @@
     animation:none !important;
     scale:1.15;
     filter:drop-shadow(0 10px 14px rgba(120,80,60,.35));
+    z-index:7;
   }
   .food.eaten{
     animation:eaten-pop .28s ease forwards !important;
@@ -214,7 +252,7 @@
     position:fixed;
     font-size:1.3rem;
     pointer-events:none;
-    z-index:6;
+    z-index:8;
     animation:burst .6s ease-out forwards;
   }
   @keyframes burst{
@@ -222,17 +260,6 @@
     100%{transform:var(--dx) scale(.4);opacity:0;}
   }
 
-  /* ---- クリア画面 ---- */
-  #clearScreen h2{
-    font-size:2.4rem;
-    margin:0 0 .4rem;
-    color:#c9548a;
-    text-shadow:0 2px 0 #fff, 0 4px 10px rgba(200,90,140,.3);
-  }
-  #clearScreen p{
-    margin:0 0 1.6rem;
-    font-size:1.05rem;
-  }
   .confetti{
     position:fixed;
     font-size:1.6rem;
@@ -252,28 +279,38 @@
   <!-- タイトル画面 -->
   <section id="titleScreen" class="screen">
     <h1>ASMRゲーム</h1>
-    <p>ゆびで たべものを つまんで<br>おくちに はこんであげよう♪</p>
-    <svg id="galPreview" class="gal-preview" viewBox="0 0 300 340" xmlns="http://www.w3.org/2000/svg"></svg>
+    <p>テーブルのおさらから ゆびで おかずを つまんで<br>おくちに はこんであげよう♪</p>
+    <svg id="galPreview" class="gal-preview" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="stage-hint">ぜんぶで 5ステージ あるよ</div>
     <button id="startBtn" class="big" type="button">▶ はじめる</button>
   </section>
 
   <!-- ゲーム画面 -->
   <section id="gameScreen" class="screen" hidden>
     <div id="hud">
+      <div id="hudStage">ステージ 1</div>
       <div id="hudBar"><div id="hudFill"></div></div>
       <div id="hudCount">0 / 10</div>
     </div>
     <div id="galWrap">
-      <svg id="galSvg" viewBox="0 0 300 340" xmlns="http://www.w3.org/2000/svg"></svg>
+      <svg id="galSvg" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg"></svg>
     </div>
     <div id="foodLayer"></div>
+    <div id="tableWrap"></div>
   </section>
 
-  <!-- クリア画面 -->
-  <section id="clearScreen" class="screen" hidden>
-    <h2>クリア!! 🎉</h2>
-    <p>10こ たべさせてあげたよ、えらい!</p>
-    <button id="retryBtn" class="big" type="button">🔁 もういちど あそぶ</button>
+  <!-- ステージクリア画面 -->
+  <section id="stageClearScreen" class="screen" hidden>
+    <h2 id="stageClearTitle">ステージ1 クリア!!</h2>
+    <p>つぎのステージに ちょうせんしよう!</p>
+    <button id="nextStageBtn" class="big" type="button">▶ つぎへ</button>
+  </section>
+
+  <!-- 全ステージクリア画面 -->
+  <section id="finalClearScreen" class="screen" hidden>
+    <h2>全ステージ クリア!! 🎉</h2>
+    <p>5つの ステージを ぜんぶ クリアしたよ、すごい!</p>
+    <button id="restartBtn" class="big" type="button">🔁 さいしょから あそぶ</button>
   </section>
 
 </div>
@@ -284,28 +321,44 @@
 
   /* ------------------------------------------------------------
      ギャルキャラクターのSVG(おなじものを タイトル/ゲーム画面で使う)
+     ※ 手描きイラストを受け取り次第、差し替え予定のプレースホルダー
   ------------------------------------------------------------ */
   function galMarkup(mouthId){
     return `
-      <ellipse cx="150" cy="330" rx="95" ry="30" fill="#00000012"/>
-      <path d="M60 180 C40 260 70 320 150 330 C230 320 260 260 240 180 Z" fill="var(--main)"/>
-      <path d="M40 130 C15 190 30 250 55 275 C40 210 55 160 80 130 Z" fill="var(--hair-dark)"/>
-      <path d="M260 130 C285 190 270 250 245 275 C260 210 245 160 220 130 Z" fill="var(--hair-dark)"/>
-      <ellipse cx="150" cy="150" rx="92" ry="98" fill="var(--skin)"/>
-      <path d="M58 120 C55 60 100 18 150 18 C200 18 245 60 242 120 C230 85 205 95 195 78 C185 95 165 100 150 82 C135 100 115 95 105 78 C95 95 70 85 58 120 Z" fill="var(--hair)"/>
-      <path d="M55 95 C20 110 15 165 35 205 C40 165 45 130 65 108 Z" fill="var(--hair)"/>
-      <path d="M245 95 C280 110 285 165 265 205 C260 165 255 130 235 108 Z" fill="var(--hair)"/>
-      <ellipse cx="112" cy="168" rx="16" ry="20" fill="#3a2a2a"/>
-      <ellipse cx="188" cy="168" rx="16" ry="20" fill="#3a2a2a"/>
-      <ellipse cx="108" cy="161" rx="5" ry="6" fill="#fff"/>
-      <ellipse cx="184" cy="161" rx="5" ry="6" fill="#fff"/>
-      <path d="M94 150 L124 144 M94 156 L123 152 M96 143 L122 136" stroke="#3a2a2a" stroke-width="3" stroke-linecap="round"/>
-      <path d="M206 150 L176 144 M206 156 L177 152 M204 143 L178 136" stroke="#3a2a2a" stroke-width="3" stroke-linecap="round"/>
-      <ellipse cx="90" cy="196" rx="16" ry="9" fill="var(--blush)" opacity="0.65"/>
-      <ellipse cx="210" cy="196" rx="16" ry="9" fill="var(--blush)" opacity="0.65"/>
+      <ellipse cx="150" cy="392" rx="120" ry="18" fill="#00000014"/>
+      <path d="M55 398 C48 300 78 258 150 254 C222 258 252 300 245 398 Z" fill="var(--top)"/>
+      <path d="M55 398 C48 300 78 258 150 254 C222 258 252 300 245 398 Z" fill="none" stroke="var(--top-dark)" stroke-width="3"/>
+      <path d="M118 258 C128 278 172 278 182 258 L172 292 C160 300 140 300 128 292 Z" fill="var(--sub)"/>
+      <path d="M133 226 L133 262 C133 274 167 274 167 262 L167 226 Z" fill="var(--skin)"/>
+      <path d="M133 250 C144 260 156 260 167 250 L167 262 C156 270 144 270 133 262 Z" fill="var(--skin-dark)" opacity=".5"/>
+
+      <path d="M40 150 C18 210 30 265 58 292 C46 230 52 180 74 148 Z" fill="var(--hair-dark)"/>
+      <path d="M260 150 C282 210 270 265 242 292 C254 230 248 180 226 148 Z" fill="var(--hair-dark)"/>
+
+      <path d="M150 58 C202 58 226 106 222 158 C220 200 194 236 150 240 C106 236 80 200 78 158 C74 106 98 58 150 58 Z" fill="var(--skin)"/>
+
+      <path d="M62 130 C56 78 96 34 150 34 C204 34 244 78 238 130 C224 96 202 104 190 90 C180 102 164 106 150 92 C136 106 120 102 110 90 C98 104 76 96 62 130 Z" fill="var(--hair)"/>
+      <path d="M58 108 C24 122 18 172 36 208 C40 172 46 140 66 118 Z" fill="var(--hair)"/>
+      <path d="M242 108 C276 122 282 172 264 208 C260 172 254 140 234 118 Z" fill="var(--hair)"/>
+
+      <path d="M92 138 C102 128 122 128 132 136" stroke="#6b4a26" stroke-width="4" stroke-linecap="round" fill="none"/>
+      <path d="M208 138 C198 128 178 128 168 136" stroke="#6b4a26" stroke-width="4" stroke-linecap="round" fill="none"/>
+
+      <path d="M96 160 C102 150 124 150 130 160 C124 172 102 172 96 160 Z" fill="#3a2a2a"/>
+      <path d="M204 160 C198 150 176 150 170 160 C176 172 198 172 204 160 Z" fill="#3a2a2a"/>
+      <circle cx="110" cy="158" r="4.5" fill="#fff"/>
+      <circle cx="190" cy="158" r="4.5" fill="#fff"/>
+      <path d="M90 148 L124 140 M90 154 L123 148 M92 141 L122 132" stroke="#3a2a2a" stroke-width="3" stroke-linecap="round"/>
+      <path d="M210 148 L176 140 M210 154 L177 148 M208 141 L178 132" stroke="#3a2a2a" stroke-width="3" stroke-linecap="round"/>
+
+      <path d="M148 172 C150 180 150 186 147 190" stroke="var(--skin-dark)" stroke-width="2.5" stroke-linecap="round" fill="none" opacity=".7"/>
+
+      <ellipse cx="88" cy="192" rx="15" ry="8" fill="var(--blush)" opacity="0.6"/>
+      <ellipse cx="212" cy="192" rx="15" ry="8" fill="var(--blush)" opacity="0.6"/>
+
       <g id="${mouthId}">
-        <ellipse cx="150" cy="214" rx="22" ry="16" fill="var(--lip-dark)"/>
-        <ellipse cx="150" cy="210" rx="18" ry="11" fill="var(--lip)"/>
+        <ellipse cx="150" cy="208" rx="21" ry="15" fill="var(--lip-dark)"/>
+        <ellipse cx="150" cy="204" rx="17" ry="10" fill="var(--lip)"/>
       </g>
     `;
   }
@@ -313,7 +366,9 @@
   document.getElementById("galSvg").innerHTML = galMarkup("mouthGroup");
 
   /* ------------------------------------------------------------
-     効果音(WebAudioで生成、外部ファイル不要)
+     効果音
+     咀嚼音は assets/sfx/chew.mp3 を用意すればそれを再生する。
+     まだファイルが無い場合はWebAudioで作った音で代用する。
   ------------------------------------------------------------ */
   var audioCtx = null;
   function ensureAudio(){
@@ -338,7 +393,10 @@
     osc.start(t);
     osc.stop(t + duration + 0.02);
   }
-  function playChomp(){ ensureAudio(); tone(650,180,0.16,0,0.35,"sine"); }
+  function synthChew(){
+    tone(520,260,0.11,0,0.32,"sine");
+    tone(430,220,0.10,0.09,0.24,"sine");
+  }
   function playPop(){ ensureAudio(); tone(900,1200,0.08,0,0.12,"sine"); }
   function playClear(){
     ensureAudio();
@@ -346,71 +404,121 @@
     notes.forEach(function(f,i){ tone(f,f,0.22,i*0.12,0.28,"triangle"); });
   }
 
+  var CHEW_SRC = "assets/sfx/chew.mp3";
+  var chewAudio = new Audio(CHEW_SRC);
+  chewAudio.preload = "auto";
+  var chewAudioReady = false;
+  chewAudio.addEventListener("canplaythrough", function(){ chewAudioReady = true; }, {once:true});
+  function playChew(){
+    ensureAudio();
+    if(chewAudioReady){
+      try{
+        var inst = chewAudio.cloneNode(true);
+        var p = inst.play();
+        if(p && p.catch) p.catch(synthChew);
+        return;
+      }catch(e){ /* WebAudioにフォールバック */ }
+    }
+    synthChew();
+  }
+
   /* ------------------------------------------------------------
      画面切り替え
   ------------------------------------------------------------ */
   var titleScreen = document.getElementById("titleScreen");
   var gameScreen = document.getElementById("gameScreen");
-  var clearScreen = document.getElementById("clearScreen");
+  var stageClearScreen = document.getElementById("stageClearScreen");
+  var finalClearScreen = document.getElementById("finalClearScreen");
+  var ALL_SCREENS = [titleScreen, gameScreen, stageClearScreen, finalClearScreen];
+
   var startBtn = document.getElementById("startBtn");
-  var retryBtn = document.getElementById("retryBtn");
+  var nextStageBtn = document.getElementById("nextStageBtn");
+  var restartBtn = document.getElementById("restartBtn");
+  var stageClearTitle = document.getElementById("stageClearTitle");
+  var hudStage = document.getElementById("hudStage");
   var hudFill = document.getElementById("hudFill");
   var hudCount = document.getElementById("hudCount");
   var foodLayer = document.getElementById("foodLayer");
+  var tableWrap = document.getElementById("tableWrap");
   var mouthGroup = document.getElementById("galSvg").querySelector("#mouthGroup");
 
-  var GOAL = 10;
-  var eatenCount = 0;
-  var activeFood = null;
-  var spawnTimer = null;
+  var STAGES = [
+    {stage:1, goal:10, plates:1},
+    {stage:2, goal:20, plates:2},
+    {stage:3, goal:30, plates:3},
+    {stage:4, goal:40, plates:4},
+    {stage:5, goal:50, plates:5}
+  ];
 
-  var FOODS = ["🍇","🥕","🍌","🍓","🍑","🍋","🍒","🍉"];
+  var FOODS_MAIN = ["🍙","🍗","🍳","🍤","🍣","🥟","🍖","🍥"];
+
+  var currentStageIndex = 0;
+  var stageToken = 0;
+  var eatenInStage = 0;
+  var spawnedInStage = 0;
+  var plateEls = [];
+  var pendingTimers = [];
 
   function showScreen(el){
-    [titleScreen, gameScreen, clearScreen].forEach(function(s){ s.hidden = (s !== el); });
+    ALL_SCREENS.forEach(function(s){ s.hidden = (s !== el); });
   }
 
-  function startGame(){
-    ensureAudio();
-    eatenCount = 0;
-    updateHud();
-    clearFood();
-    showScreen(gameScreen);
-    spawnFood();
+  function clearPendingTimers(){
+    pendingTimers.forEach(clearTimeout);
+    pendingTimers = [];
+  }
+
+  function buildTable(plateCount){
+    tableWrap.innerHTML = "";
+    plateEls = [];
+    for(var i=0;i<plateCount;i++){
+      var p = document.createElement("div");
+      p.className = "plate";
+      tableWrap.appendChild(p);
+      plateEls.push(p);
+    }
   }
 
   function updateHud(){
-    hudFill.style.width = (eatenCount / GOAL * 100) + "%";
-    hudCount.textContent = eatenCount + " / " + GOAL;
+    var cfg = STAGES[currentStageIndex];
+    hudStage.textContent = "ステージ " + cfg.stage;
+    hudFill.style.width = (eatenInStage / cfg.goal * 100) + "%";
+    hudCount.textContent = eatenInStage + " / " + cfg.goal;
   }
 
-  function clearFood(){
+  function startStage(index){
+    currentStageIndex = index;
+    stageToken++;
+    var myToken = stageToken;
+    var cfg = STAGES[index];
+    eatenInStage = 0;
+    spawnedInStage = 0;
+    clearPendingTimers();
     foodLayer.innerHTML = "";
-    activeFood = null;
-    if(spawnTimer){ clearTimeout(spawnTimer); spawnTimer = null; }
+    buildTable(cfg.plates);
+    updateHud();
+    showScreen(gameScreen);
+    requestAnimationFrame(function(){
+      if(myToken !== stageToken) return;
+      plateEls.forEach(function(p){ trySpawnOnPlate(p, myToken); });
+    });
   }
 
-  function randomSpawnPos(size){
-    var margin = 16;
-    var hudH = 70;
-    var topLimit = hudH + margin;
-    var bottomLimit = window.innerHeight * 0.5;
-    var x = margin + Math.random() * (window.innerWidth - size - margin*2);
-    var y = topLimit + Math.random() * Math.max(40, bottomLimit - topLimit);
-    return {x:x, y:y};
-  }
-
-  function spawnFood(){
-    if(eatenCount >= GOAL) return;
-    var size = 56;
-    var pos = randomSpawnPos(size);
+  function trySpawnOnPlate(plateEl, token){
+    if(token !== stageToken) return;
+    var cfg = STAGES[currentStageIndex];
+    if(spawnedInStage >= cfg.goal) return;
+    spawnedInStage++;
+    var rect = plateEl.getBoundingClientRect();
+    var size = 52;
     var el = document.createElement("div");
     el.className = "food";
-    el.textContent = FOODS[Math.floor(Math.random() * FOODS.length)];
-    el.style.left = pos.x + "px";
-    el.style.top = pos.y + "px";
+    el.textContent = FOODS_MAIN[Math.floor(Math.random() * FOODS_MAIN.length)];
+    el.style.left = (rect.left + rect.width/2 - size/2) + "px";
+    el.style.top = (rect.top + rect.height/2 - size/2) + "px";
+    el._plateEl = plateEl;
+    el._token = token;
     foodLayer.appendChild(el);
-    activeFood = el;
     playPop();
     attachDrag(el);
   }
@@ -437,7 +545,7 @@
       el.style.top = y + "px";
     });
 
-    function endDrag(e){
+    function endDrag(){
       if(!dragging) return;
       dragging = false;
       el.classList.remove("dragging");
@@ -448,6 +556,7 @@
   }
 
   function checkDrop(el){
+    if(el._token !== stageToken) return;
     var foodRect = el.getBoundingClientRect();
     var foodCx = foodRect.left + foodRect.width/2;
     var foodCy = foodRect.top + foodRect.height/2;
@@ -455,33 +564,49 @@
     var mouthCx = mouthRect.left + mouthRect.width/2;
     var mouthCy = mouthRect.top + mouthRect.height/2;
     var dist = Math.hypot(foodCx - mouthCx, foodCy - mouthCy);
-    var threshold = Math.max(mouthRect.width, mouthRect.height)/2 + 46;
+    var threshold = Math.max(mouthRect.width, mouthRect.height)/2 + 50;
     if(dist <= threshold){
       eatFood(el, mouthCx, mouthCy);
     }
   }
 
   function eatFood(el, atX, atY){
+    var token = el._token;
+    var plateEl = el._plateEl;
     el.classList.add("eaten");
-    playChomp();
+    playChew();
     mouthGroup.classList.remove("chomp");
     void mouthGroup.offsetWidth;
     mouthGroup.classList.add("chomp");
     burstParticles(atX, atY);
-    eatenCount++;
+    eatenInStage++;
     updateHud();
-    setTimeout(function(){
+    pendingTimers.push(setTimeout(function(){
       if(el.parentNode) el.parentNode.removeChild(el);
-    }, 260);
+    }, 260));
 
-    if(eatenCount >= GOAL){
-      spawnTimer = setTimeout(function(){
-        showScreen(clearScreen);
-        playClear();
-        launchConfetti();
-      }, 420);
+    var cfg = STAGES[currentStageIndex];
+    if(eatenInStage >= cfg.goal){
+      pendingTimers.push(setTimeout(function(){
+        if(token !== stageToken) return;
+        onStageComplete();
+      }, 420));
     } else {
-      spawnTimer = setTimeout(spawnFood, 320);
+      pendingTimers.push(setTimeout(function(){
+        trySpawnOnPlate(plateEl, token);
+      }, 320));
+    }
+  }
+
+  function onStageComplete(){
+    var cfg = STAGES[currentStageIndex];
+    playClear();
+    launchConfetti();
+    if(currentStageIndex >= STAGES.length - 1){
+      showScreen(finalClearScreen);
+    } else {
+      stageClearTitle.textContent = "ステージ" + cfg.stage + " クリア!!";
+      showScreen(stageClearScreen);
     }
   }
 
@@ -520,13 +645,13 @@
   }
 
   /* ------------------------------------------------------------
-     背景のふわふわ飾り
+     背景のふわふわ飾り(キラキラ+くだもの)
   ------------------------------------------------------------ */
-  (function ambientSparkles(){
-    var glyphs = ["✨","💗","⭐","💫"];
-    for(var i=0;i<10;i++){
+  (function ambientBackground(){
+    var glyphs = ["✨","💗","⭐","💫","🍇","🍓","🍑","🍋","🍒","🍉","🍌","🍊"];
+    for(var i=0;i<16;i++){
       var s = document.createElement("div");
-      s.className = "sparkle";
+      s.className = "bgdeco";
       s.textContent = glyphs[i % glyphs.length];
       s.style.left = (Math.random()*94) + "vw";
       s.style.top = (Math.random()*90) + "vh";
@@ -536,8 +661,9 @@
     }
   })();
 
-  startBtn.addEventListener("click", startGame);
-  retryBtn.addEventListener("click", startGame);
+  startBtn.addEventListener("click", function(){ ensureAudio(); startStage(0); });
+  nextStageBtn.addEventListener("click", function(){ startStage(currentStageIndex + 1); });
+  restartBtn.addEventListener("click", function(){ startStage(0); });
 
 })();
 </script>
