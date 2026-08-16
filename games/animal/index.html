@@ -285,31 +285,27 @@
     text-align: center;
   }
   .a-btn {
-    width: 4.5rem;
-    height: 4.5rem;
-    border-radius: 50%;
+    width: 3.6rem;
+    height: 3.6rem;
+    border-radius: 10px;
     border: none;
     background: radial-gradient(circle at 35% 30%, #ff9466, #d94f1e 70%);
     color: #fff;
     font-family: var(--font-body);
-    font-size: 1.9rem;
+    font-size: 1.6rem;
     font-weight: 800;
-    cursor: pointer;
-    touch-action: manipulation;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     box-shadow: 0 6px 0 #a13c14, 0 10px 18px rgba(0, 0, 0, .25);
-    transition: transform .08s ease, box-shadow .08s ease;
+    transition: transform .08s ease, box-shadow .08s ease, opacity .2s ease;
   }
-  .a-btn:active {
+  .a-btn.pressed {
     transform: translateY(5px);
     box-shadow: 0 1px 0 #a13c14, 0 4px 10px rgba(0, 0, 0, .2);
   }
-  .a-btn:disabled {
+  .a-btn.dim {
     opacity: .5;
-    cursor: default;
-  }
-  .a-btn:focus-visible {
-    outline: 3px solid var(--accent);
-    outline-offset: 4px;
   }
   .a-btn-caption {
     margin: .5rem 0 0;
@@ -509,13 +505,13 @@
 
     <div class="a-btn-row">
       <div class="a-btn-wrap">
-        <button type="button" class="a-btn" id="feedActionBtn" aria-label="えさをあげる(Xボタン)">X</button>
-        <p class="a-btn-caption">おすと えさをあげる</p>
+        <div class="a-btn" id="feedKeyIndicator" aria-hidden="true">X</div>
+        <p class="a-btn-caption">キーボードの X で えさをあげる</p>
       </div>
     </div>
   </main>
 
-  <footer class="note">あそびかた: えさをえらんで、Xボタンをおす(キーボードの X キーでもOK)</footer>
+  <footer class="note">あそびかた: えさをえらんで、キーボードの X キーをおす</footer>
 </div>
 
 <div class="clear-overlay" id="clearOverlay" hidden>
@@ -699,7 +695,7 @@
   var progressFill = document.getElementById("progressFill");
   var totalFeedsEl = document.getElementById("totalFeeds");
   var foodRow = document.getElementById("foodRow");
-  var feedActionBtn = document.getElementById("feedActionBtn");
+  var feedKeyIndicator = document.getElementById("feedKeyIndicator");
   var clearOverlay = document.getElementById("clearOverlay");
   var clearStatsEl = document.getElementById("clearStats");
   var restartBtn = document.getElementById("restartBtn");
@@ -768,7 +764,7 @@
     }
 
     renderFoodRow();
-    feedActionBtn.disabled = cleared;
+    feedKeyIndicator.classList.toggle("dim", cleared);
   }
 
   function getSelectedFoodEmoji() {
@@ -921,13 +917,18 @@
     zukanOverlay.hidden = true;
   });
   restartBtn.addEventListener("click", reset);
-  feedActionBtn.addEventListener("click", function () {
-    feed(getSelectedFoodEmoji());
-  });
   window.addEventListener("keydown", function (e) {
     if (cleared || zukanOverlay.hidden === false) return;
     if (e.key === "x" || e.key === "X") {
+      feedKeyIndicator.classList.remove("pressed");
+      void feedKeyIndicator.offsetWidth;
+      feedKeyIndicator.classList.add("pressed");
       feed(getSelectedFoodEmoji());
+    }
+  });
+  window.addEventListener("keyup", function (e) {
+    if (e.key === "x" || e.key === "X") {
+      feedKeyIndicator.classList.remove("pressed");
     }
   });
 
