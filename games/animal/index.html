@@ -544,6 +544,65 @@
     font-size: .9rem;
     text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
   }
+  .room-cell.room-deco .room-emoji {
+    font-size: 1.9rem;
+    animation-name: decoSway;
+    animation-duration: 4s;
+  }
+  @keyframes decoSway {
+    0%, 100% { transform: rotate(-3deg); }
+    50%      { transform: rotate(3deg); }
+  }
+
+  .room-shop {
+    margin-top: .75rem;
+  }
+  .room-shop-label {
+    margin: 0 0 .4rem;
+    font-size: .8rem;
+    color: var(--ink-soft);
+  }
+  .room-shop-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+  }
+  .shop-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .1rem;
+    font: inherit;
+    background: linear-gradient(180deg, var(--sub), var(--main));
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    padding: .4rem .5rem;
+    cursor: pointer;
+    touch-action: manipulation;
+    box-shadow: 0 3px 0 var(--border-strong);
+    transition: transform .1s ease, box-shadow .1s ease, opacity .15s ease;
+  }
+  .shop-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 var(--border-strong);
+  }
+  .shop-btn:disabled {
+    opacity: .45;
+    cursor: default;
+  }
+  .shop-btn .shop-emoji {
+    font-size: 1.4rem;
+    line-height: 1;
+  }
+  .shop-btn .shop-cost {
+    font-size: .68rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .shop-btn .shop-owned {
+    font-size: .62rem;
+    color: var(--ink-soft);
+  }
 
   .confetti {
     position: fixed;
@@ -587,6 +646,7 @@
   <div class="stat-row">
     <span class="stat-pill">Lv. <strong id="levelValue">1</strong></span>
     <span class="stat-pill">📖 <strong id="collectedCount">0</strong> / 120</span>
+    <span class="stat-pill">🪙 <strong id="coinValue">0</strong></span>
     <button type="button" class="zukan-btn" id="zukanBtn">図鑑をみる</button>
     <button type="button" class="zukan-btn" id="roomBtn">🏠 おへやをみる</button>
   </div>
@@ -650,6 +710,10 @@
     <div class="room-scene" id="roomScene">
       <div class="room-clouds" id="roomClouds" aria-hidden="true"></div>
       <div class="room-grid" id="roomGrid"></div>
+    </div>
+    <div class="room-shop">
+      <p class="room-shop-label">🪙 <strong id="shopCoinValue">0</strong> まいで、おへやに かざりを おこう</p>
+      <div class="room-shop-row" id="roomShopRow"></div>
     </div>
   </div>
 </div>
@@ -828,6 +892,19 @@
   var roomClouds = document.getElementById("roomClouds");
   var roomCount = document.getElementById("roomCount");
   var roomClose = document.getElementById("roomClose");
+  var coinValueEl = document.getElementById("coinValue");
+  var shopCoinValueEl = document.getElementById("shopCoinValue");
+  var roomShopRow = document.getElementById("roomShopRow");
+
+  var DECORATIONS = [
+    { id: "rock", e: "🪨", n: "いし", cost: 5 },
+    { id: "mushroom", e: "🍄", n: "きのこ", cost: 8 },
+    { id: "sunflower", e: "🌻", n: "ひまわり", cost: 12 },
+    { id: "tree", e: "🌳", n: "き", cost: 18 },
+    { id: "fountain", e: "⛲", n: "ふんすい", cost: 30 },
+    { id: "rainbow", e: "🌈", n: "にじ", cost: 50 }
+  ];
+  var COINS_PER_NEW_ANIMAL = 5;
 
   var level = 1;
   var totalFeeds = 0;
@@ -838,6 +915,8 @@
   var currentIsNew = false;
   var cleared = false;
   var selectedFoodIndex = 0;
+  var coins = 0;
+  var decorations = {};
   var MIN_GROW_SCALE = .55;
   var MAX_GROW_SCALE = 1.15;
 
@@ -1010,6 +1089,8 @@
       if (wasNew) {
         collected[currentIndex] = true;
         collectedCount++;
+        coins += COINS_PER_NEW_ANIMAL;
+        updateCoinDisplays();
       }
       level++;
 
@@ -1025,6 +1106,9 @@
         if (FOODS[i].lv === level) { unlockedFood = FOODS[i]; break; }
       }
       var toastText = "Lv." + level + " に なった!";
+      if (wasNew) {
+        toastText += "<br>🪙 +" + COINS_PER_NEW_ANIMAL + " コイン げっと!";
+      }
       if (unlockedFood) {
         toastText += "<br>" + unlockedFood.e + " " + unlockedFood.n + " が つかえるように!";
       }
@@ -1065,6 +1149,49 @@
     roomClouds.innerHTML = html;
   }
 
+  function updateCoinDisplays() {
+    coinValueEl.textContent = String(coins);
+    shopCoinValueEl.textContent = String(coins);
+  }
+
+  function renderRoomShop() {
+    var html = "";
+    for (var i = 0; i < DECORATIONS.length; i++) {
+      (function (item) {
+        var owned = decorations[item.id] || 0;
+        var affordable = coins >= item.cost;
+        html += '<button type="button" class="shop-btn" data-id="' + item.id + '"' +
+          (affordable ? "" : " disabled") + '>' +
+          '<span class="shop-emoji">' + item.e + '</span>' +
+          '<span class="shop-cost">🪙' + item.cost + '</span>' +
+          (owned > 0 ? '<span class="shop-owned">×' + owned + '</span>' : "") +
+          '</button>';
+      })(DECORATIONS[i]);
+    }
+    roomShopRow.innerHTML = html;
+
+    var buttons = roomShopRow.querySelectorAll(".shop-btn");
+    for (var j = 0; j < buttons.length; j++) {
+      buttons[j].addEventListener("click", function () {
+        buyDecoration(this.getAttribute("data-id"));
+      });
+    }
+  }
+
+  function buyDecoration(id) {
+    var item = null;
+    for (var i = 0; i < DECORATIONS.length; i++) {
+      if (DECORATIONS[i].id === id) { item = DECORATIONS[i]; break; }
+    }
+    if (!item || coins < item.cost) return;
+
+    coins -= item.cost;
+    decorations[id] = (decorations[id] || 0) + 1;
+    updateCoinDisplays();
+    renderRoom();
+    renderRoomShop();
+  }
+
   function renderRoom() {
     roomCount.textContent = collectedCount + " / " + ANIMALS.length + " なかま";
     if (collectedCount === 0) {
@@ -1072,6 +1199,15 @@
       return;
     }
     var html = "";
+    for (var d = 0; d < DECORATIONS.length; d++) {
+      var owned = decorations[DECORATIONS[d].id] || 0;
+      for (var k = 0; k < owned; k++) {
+        var decoDelay = (-1 * ((d * 53 + k * 17) % 40) / 10).toFixed(2);
+        html += '<div class="room-cell room-deco">' +
+          '<span class="room-emoji" style="animation-delay:' + decoDelay + 's">' + DECORATIONS[d].e + '</span>' +
+          '</div>';
+      }
+    }
     for (var i = 0; i < ANIMALS.length; i++) {
       if (!collected[i]) continue;
       var animName = ROOM_BOB_ANIMS[i % ROOM_BOB_ANIMS.length];
@@ -1095,6 +1231,9 @@
     collectedCount = 0;
     cleared = false;
     selectedFoodIndex = 0;
+    coins = 0;
+    decorations = {};
+    updateCoinDisplays();
     clearOverlay.hidden = true;
     startEncounter();
     render();
@@ -1109,6 +1248,7 @@
   });
   roomBtn.addEventListener("click", function () {
     renderRoom();
+    renderRoomShop();
     roomOverlay.hidden = false;
   });
   roomClose.addEventListener("click", function () {
@@ -1131,6 +1271,7 @@
   });
 
   setupRoomClouds();
+  updateCoinDisplays();
   startEncounter();
   render();
 })();
