@@ -239,12 +239,16 @@
     color: var(--ink-faint);
   }
 
+  .food-row-label {
+    margin: 1.1rem 0 .4rem;
+    font-size: .8rem;
+    color: var(--ink-faint);
+  }
   .food-row {
     display: flex;
     flex-wrap: wrap;
     gap: .5rem;
     justify-content: center;
-    margin-top: 1.1rem;
   }
   .food-btn {
     font-size: 1.7rem;
@@ -264,6 +268,53 @@
   .food-btn:focus-visible {
     outline: 3px solid var(--accent);
     outline-offset: 2px;
+  }
+  .food-btn.selected {
+    background: linear-gradient(180deg, #fff2c2, var(--accent));
+    border-color: var(--accent);
+    box-shadow: 0 4px 0 #c96a35;
+    transform: translateY(-2px);
+  }
+
+  .a-btn-row {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.4rem;
+  }
+  .a-btn-wrap {
+    text-align: center;
+  }
+  .a-btn {
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 50%;
+    border: none;
+    background: radial-gradient(circle at 35% 30%, #ff9466, #d94f1e 70%);
+    color: #fff;
+    font-family: var(--font-body);
+    font-size: 1.9rem;
+    font-weight: 800;
+    cursor: pointer;
+    touch-action: manipulation;
+    box-shadow: 0 6px 0 #a13c14, 0 10px 18px rgba(0, 0, 0, .25);
+    transition: transform .08s ease, box-shadow .08s ease;
+  }
+  .a-btn:active {
+    transform: translateY(5px);
+    box-shadow: 0 1px 0 #a13c14, 0 4px 10px rgba(0, 0, 0, .2);
+  }
+  .a-btn:disabled {
+    opacity: .5;
+    cursor: default;
+  }
+  .a-btn:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 4px;
+  }
+  .a-btn-caption {
+    margin: .5rem 0 0;
+    font-size: .8rem;
+    color: var(--ink-faint);
   }
 
   .level-up-toast {
@@ -453,10 +504,18 @@
 
     <p class="total-feeds">これまでにあげた かいすう: <strong id="totalFeeds">0</strong> かい</p>
 
+    <p class="food-row-label">つかう えさを えらぼう</p>
     <div class="food-row" id="foodRow"></div>
+
+    <div class="a-btn-row">
+      <div class="a-btn-wrap">
+        <button type="button" class="a-btn" id="feedActionBtn" aria-label="えさをあげる(Xボタン)">X</button>
+        <p class="a-btn-caption">おすと えさをあげる</p>
+      </div>
+    </div>
   </main>
 
-  <footer class="note">あそびかた: えさのボタンをタップ / クリック(キーボードでもOK)して、どうぶつをあつめよう</footer>
+  <footer class="note">あそびかた: えさをえらんで、Xボタンをおす(キーボードの X キーでもOK)</footer>
 </div>
 
 <div class="clear-overlay" id="clearOverlay" hidden>
@@ -618,8 +677,8 @@
     { e: "🍎", n: "りんご", lv: 64 }
   ];
 
-  var BASE_FEEDS_PER_ANIMAL = 2;
-  var MAX_FEEDS_PER_ANIMAL = 6;
+  var BASE_FEEDS_PER_ANIMAL = 3;
+  var MAX_FEEDS_PER_ANIMAL = 9;
   var FEEDS_STEP_EVERY_LEVELS = 15;
   var NEW_ANIMAL_BIAS = 0.7;
 
@@ -640,6 +699,7 @@
   var progressFill = document.getElementById("progressFill");
   var totalFeedsEl = document.getElementById("totalFeeds");
   var foodRow = document.getElementById("foodRow");
+  var feedActionBtn = document.getElementById("feedActionBtn");
   var clearOverlay = document.getElementById("clearOverlay");
   var clearStatsEl = document.getElementById("clearStats");
   var restartBtn = document.getElementById("restartBtn");
@@ -656,6 +716,7 @@
   var currentIndex = -1;
   var currentIsNew = false;
   var cleared = false;
+  var selectedFoodIndex = 0;
 
   function isCleared() {
     return collectedCount >= ANIMALS.length;
@@ -707,23 +768,36 @@
     }
 
     renderFoodRow();
+    feedActionBtn.disabled = cleared;
+  }
+
+  function getSelectedFoodEmoji() {
+    var foods = unlockedFoods();
+    if (selectedFoodIndex >= foods.length) selectedFoodIndex = foods.length - 1;
+    if (selectedFoodIndex < 0) selectedFoodIndex = 0;
+    return foods[selectedFoodIndex].e;
   }
 
   function renderFoodRow() {
     var foods = unlockedFoods();
+    if (selectedFoodIndex >= foods.length) selectedFoodIndex = foods.length - 1;
     foodRow.innerHTML = "";
     for (var i = 0; i < foods.length; i++) {
-      (function (food) {
+      (function (food, idx) {
         var btn = document.createElement("button");
         btn.type = "button";
-        btn.className = "food-btn";
+        btn.className = "food-btn" + (idx === selectedFoodIndex ? " selected" : "");
         btn.textContent = food.e;
-        btn.title = food.n + " をあげる";
-        btn.setAttribute("aria-label", food.n + " をあげる");
+        btn.title = food.n + " をえらぶ";
+        btn.setAttribute("aria-label", food.n + " をえらぶ");
+        btn.setAttribute("aria-pressed", idx === selectedFoodIndex ? "true" : "false");
         btn.disabled = cleared;
-        btn.addEventListener("click", function () { feed(food.e); });
+        btn.addEventListener("click", function () {
+          selectedFoodIndex = idx;
+          renderFoodRow();
+        });
         foodRow.appendChild(btn);
-      })(foods[i]);
+      })(foods[i], i);
     }
   }
 
@@ -833,6 +907,7 @@
     collected = {};
     collectedCount = 0;
     cleared = false;
+    selectedFoodIndex = 0;
     clearOverlay.hidden = true;
     startEncounter();
     render();
@@ -846,6 +921,15 @@
     zukanOverlay.hidden = true;
   });
   restartBtn.addEventListener("click", reset);
+  feedActionBtn.addEventListener("click", function () {
+    feed(getSelectedFoodEmoji());
+  });
+  window.addEventListener("keydown", function (e) {
+    if (cleared || zukanOverlay.hidden === false) return;
+    if (e.key === "x" || e.key === "X") {
+      feed(getSelectedFoodEmoji());
+    }
+  });
 
   startEncounter();
   render();
