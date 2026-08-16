@@ -74,7 +74,7 @@
 
   header.top {
     text-align: center;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1rem;
   }
   .eyebrow {
     margin: 0 0 .2rem;
@@ -91,6 +91,45 @@
     font-size: .85rem;
     color: var(--ink-soft);
   }
+  .goal {
+    margin: .35rem 0 0;
+    font-size: .85rem;
+    color: var(--ink-faint);
+  }
+
+  .stat-row {
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 0 0 1rem;
+  }
+  .stat-pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: .35rem .8rem;
+    font-size: .85rem;
+    font-weight: 700;
+    color: var(--ink-soft);
+  }
+  .stat-pill strong {
+    color: var(--ink);
+    font-size: 1rem;
+  }
+  .zukan-btn {
+    background: var(--sub);
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    padding: .35rem .9rem;
+    font: inherit;
+    font-weight: 700;
+    font-size: .85rem;
+    color: var(--ink);
+    cursor: pointer;
+    touch-action: manipulation;
+  }
 
   .card {
     position: relative;
@@ -101,6 +140,27 @@
     padding: 1.5rem 1.25rem 1.75rem;
     text-align: center;
     box-shadow: 0 12px 30px rgba(40, 60, 120, 0.1);
+  }
+
+  .new-badge {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-6deg);
+    background: var(--accent);
+    color: #fff;
+    font-weight: 800;
+    font-size: .8rem;
+    padding: .25rem .7rem;
+    border-radius: 8px;
+    letter-spacing: .05em;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .15);
+    animation: newPop .5s ease;
+  }
+  @keyframes newPop {
+    0%   { transform: translateX(-50%) rotate(-6deg) scale(0); }
+    60%  { transform: translateX(-50%) rotate(-6deg) scale(1.2); }
+    100% { transform: translateX(-50%) rotate(-6deg) scale(1); }
   }
 
   .stage-name {
@@ -135,7 +195,7 @@
     100% { transform: scale(1) rotate(0); }
   }
 
-  .flying-meat {
+  .flying-food {
     position: absolute;
     left: 50%;
     bottom: 92px;
@@ -179,46 +239,50 @@
     color: var(--ink-faint);
   }
 
-  .feed-btn {
-    margin-top: 1.25rem;
-    width: 100%;
-    font: inherit;
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--main-ink);
+  .food-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    justify-content: center;
+    margin-top: 1.1rem;
+  }
+  .food-btn {
+    font-size: 1.7rem;
     background: linear-gradient(180deg, var(--sub), var(--main));
     border: 1px solid var(--border-strong);
-    border-radius: 18px;
-    padding: 1rem;
+    border-radius: 14px;
+    padding: .5rem .65rem;
     cursor: pointer;
+    box-shadow: 0 4px 0 var(--border-strong);
     touch-action: manipulation;
     transition: transform .1s ease, box-shadow .1s ease;
-    box-shadow: 0 6px 0 var(--border-strong);
   }
-  .feed-btn:active {
-    transform: translateY(4px);
-    box-shadow: 0 2px 0 var(--border-strong);
+  .food-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 var(--border-strong);
   }
-  .feed-btn:focus-visible {
+  .food-btn:focus-visible {
     outline: 3px solid var(--accent);
     outline-offset: 2px;
   }
 
   .level-up-toast {
     position: absolute;
-    top: 40%;
+    top: 38%;
     left: 50%;
     transform: translate(-50%, -50%) scale(.6);
     background: var(--surface);
     border: 2px solid var(--accent);
     border-radius: 14px;
-    padding: .6rem 1.1rem;
+    padding: .55rem 1rem;
     font-weight: 700;
+    font-size: .95rem;
     color: var(--accent);
     opacity: 0;
     pointer-events: none;
-    animation: popToast 1.1s ease forwards;
+    animation: popToast 1.15s ease forwards;
     white-space: nowrap;
+    z-index: 2;
   }
   @keyframes popToast {
     0%   { opacity: 0; transform: translate(-50%, -50%) scale(.5); }
@@ -235,7 +299,7 @@
     color: var(--ink-faint);
   }
 
-  .clear-overlay {
+  .clear-overlay, .zukan-overlay {
     position: fixed;
     inset: 0;
     background: rgba(20, 26, 48, .55);
@@ -243,9 +307,9 @@
     align-items: center;
     justify-content: center;
     padding: 1.25rem;
-    z-index: 10;
+    z-index: 30;
   }
-  .clear-overlay[hidden] { display: none; }
+  .clear-overlay[hidden], .zukan-overlay[hidden] { display: none; }
   .clear-card {
     background: var(--surface);
     border-radius: 22px;
@@ -264,8 +328,86 @@
     font-size: 1.6rem;
   }
   .clear-card p {
-    margin: 0 0 1.2rem;
+    margin: 0 0 .5rem;
     color: var(--ink-soft);
+  }
+  .clear-card .clear-stats {
+    margin: 0 0 1.2rem;
+    font-size: .85rem;
+    color: var(--ink-faint);
+  }
+  .feed-btn {
+    font: inherit;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--main-ink);
+    background: linear-gradient(180deg, var(--sub), var(--main));
+    border: 1px solid var(--border-strong);
+    border-radius: 18px;
+    padding: .85rem 1rem;
+    cursor: pointer;
+    touch-action: manipulation;
+    width: 100%;
+  }
+
+  .zukan-card {
+    background: var(--surface);
+    border-radius: 20px;
+    padding: 1.1rem;
+    max-width: 34rem;
+    width: 100%;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .zukan-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: .75rem;
+    gap: .5rem;
+  }
+  .zukan-head h2 {
+    margin: 0;
+    font-size: 1.15rem;
+  }
+  .zukan-head span {
+    font-size: .85rem;
+    color: var(--ink-soft);
+  }
+  .zukan-close {
+    border: none;
+    background: var(--sub);
+    border-radius: 50%;
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+    cursor: pointer;
+    flex: none;
+  }
+  .zukan-grid {
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(3.2rem, 1fr));
+    gap: .4rem;
+    padding: .2rem;
+  }
+  .zukan-cell {
+    aspect-ratio: 1;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+  }
+  .zukan-cell.locked {
+    color: var(--ink-faint);
+    font-size: 1.2rem;
+  }
+  .zukan-cell.collected {
+    background: linear-gradient(180deg, var(--sub), var(--main));
   }
 
   .confetti {
@@ -274,7 +416,7 @@
     font-size: 1.5rem;
     animation: confettiFall linear forwards;
     pointer-events: none;
-    z-index: 11;
+    z-index: 31;
   }
   @keyframes confettiFall {
     0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
@@ -288,9 +430,17 @@
     <p class="eyebrow">🎮 まつしげーむせんたー</p>
     <h1>動物育成ゲーム</h1>
     <p class="credit">花乃子さんの企画をもとに制作</p>
+    <p class="goal">えさをあげて、120しゅるいの どうぶつを ぜんぶ あつめよう!</p>
   </header>
 
+  <div class="stat-row">
+    <span class="stat-pill">Lv. <strong id="levelValue">1</strong></span>
+    <span class="stat-pill">📖 <strong id="collectedCount">0</strong> / 120</span>
+    <button type="button" class="zukan-btn" id="zukanBtn">図鑑をみる</button>
+  </div>
+
   <main class="card" id="game">
+    <div class="new-badge" id="newBadge" hidden>NEW!</div>
     <p class="stage-name" id="stageName"></p>
     <div class="animal-stage">
       <span class="animal" id="animalEmoji"></span>
@@ -303,75 +453,286 @@
 
     <p class="total-feeds">これまでにあげた かいすう: <strong id="totalFeeds">0</strong> かい</p>
 
-    <button type="button" class="feed-btn" id="feedBtn">🍖 えさをあげる</button>
+    <div class="food-row" id="foodRow"></div>
   </main>
 
-  <footer class="note">あそびかた: ボタンをタップ / クリック(キーボードでもOK)して、ライオンになるまで そだてよう</footer>
+  <footer class="note">あそびかた: えさのボタンをタップ / クリック(キーボードでもOK)して、どうぶつをあつめよう</footer>
 </div>
 
 <div class="clear-overlay" id="clearOverlay" hidden>
   <div class="clear-card">
-    <p class="clear-emoji">🦁🎉</p>
-    <h2>クリア!</h2>
-    <p>ライオンまで りっぱに そだてたね!</p>
+    <p class="clear-emoji">🏆🎉</p>
+    <h2>コレクション コンプリート!</h2>
+    <p>120しゅるい ぜんぶの どうぶつを あつめたね!</p>
+    <p class="clear-stats" id="clearStats"></p>
     <button type="button" class="feed-btn" id="restartBtn">もういちど あそぶ</button>
+  </div>
+</div>
+
+<div class="zukan-overlay" id="zukanOverlay" hidden>
+  <div class="zukan-card">
+    <div class="zukan-head">
+      <h2>どうぶつずかん</h2>
+      <span id="zukanCount"></span>
+      <button type="button" class="zukan-close" id="zukanClose" aria-label="とじる">✕</button>
+    </div>
+    <div class="zukan-grid" id="zukanGrid"></div>
   </div>
 </div>
 
 <script>
 (function () {
-  var STAGES = [
-    { emoji: "🐱", name: "こねこ", need: 3 },
-    { emoji: "🐈", name: "ねこ", need: 4 },
-    { emoji: "🐯", name: "とら", need: 5 },
-    { emoji: "🦁", name: "ライオン", need: 0 }
+  var ANIMALS = [
+    { e: "🐶", n: "いぬ(かお)" },
+    { e: "🐕", n: "いぬ" },
+    { e: "🐩", n: "プードル" },
+    { e: "🐺", n: "おおかみ" },
+    { e: "🦊", n: "きつね" },
+    { e: "🐱", n: "ねこ(かお)" },
+    { e: "🐈", n: "ねこ" },
+    { e: "🐈‍⬛", n: "くろねこ" },
+    { e: "🦁", n: "ライオン" },
+    { e: "🐯", n: "とら(かお)" },
+    { e: "🐅", n: "とら" },
+    { e: "🐆", n: "ひょう" },
+    { e: "🐴", n: "うま(かお)" },
+    { e: "🐎", n: "うま" },
+    { e: "🦄", n: "ユニコーン" },
+    { e: "🦓", n: "しまうま" },
+    { e: "🦌", n: "しか" },
+    { e: "🐮", n: "うし(かお)" },
+    { e: "🐄", n: "うし" },
+    { e: "🐂", n: "おうし" },
+    { e: "🐃", n: "すいぎゅう" },
+    { e: "🐷", n: "ぶた(かお)" },
+    { e: "🐖", n: "ぶた" },
+    { e: "🐗", n: "いのしし" },
+    { e: "🐏", n: "おひつじ" },
+    { e: "🐑", n: "ひつじ" },
+    { e: "🐐", n: "やぎ" },
+    { e: "🦙", n: "らま" },
+    { e: "🐪", n: "ひとこぶらくだ" },
+    { e: "🐫", n: "ふたこぶらくだ" },
+    { e: "🦒", n: "きりん" },
+    { e: "🐘", n: "ぞう" },
+    { e: "🦣", n: "マンモス" },
+    { e: "🦏", n: "さい" },
+    { e: "🦛", n: "かば" },
+    { e: "🐭", n: "ねずみ(かお)" },
+    { e: "🐁", n: "ねずみ" },
+    { e: "🐀", n: "どぶねずみ" },
+    { e: "🐹", n: "ハムスター" },
+    { e: "🐰", n: "うさぎ(かお)" },
+    { e: "🐇", n: "うさぎ" },
+    { e: "🐿️", n: "りす" },
+    { e: "🦫", n: "ビーバー" },
+    { e: "🦔", n: "はりねずみ" },
+    { e: "🦇", n: "こうもり" },
+    { e: "🐻", n: "くま" },
+    { e: "🐻‍❄️", n: "ほっきょくぐま" },
+    { e: "🐨", n: "こあら" },
+    { e: "🐼", n: "ぱんだ" },
+    { e: "🦥", n: "なまけもの" },
+    { e: "🦦", n: "かわうそ" },
+    { e: "🦨", n: "すかんく" },
+    { e: "🦘", n: "かんがるー" },
+    { e: "🦡", n: "あなぐま" },
+    { e: "🦝", n: "あらいぐま" },
+    { e: "🦬", n: "ばいそん" },
+    { e: "🐵", n: "さる(かお)" },
+    { e: "🐒", n: "さる" },
+    { e: "🦍", n: "ごりら" },
+    { e: "🦧", n: "おらんうーたん" },
+    { e: "🐔", n: "にわとり" },
+    { e: "🐓", n: "おんどり" },
+    { e: "🐣", n: "うまれたてひよこ" },
+    { e: "🐤", n: "ひよこ" },
+    { e: "🐥", n: "こひよこ" },
+    { e: "🐦", n: "とり" },
+    { e: "🐧", n: "ぺんぎん" },
+    { e: "🕊️", n: "はと" },
+    { e: "🦅", n: "わし" },
+    { e: "🦆", n: "あひる" },
+    { e: "🦢", n: "はくちょう" },
+    { e: "🦉", n: "ふくろう" },
+    { e: "🦤", n: "どーどー" },
+    { e: "🦩", n: "ふらみんご" },
+    { e: "🦚", n: "くじゃく" },
+    { e: "🦜", n: "おうむ" },
+    { e: "🦃", n: "しちめんちょう" },
+    { e: "🐦‍⬛", n: "からす" },
+    { e: "🐸", n: "かえる" },
+    { e: "🐊", n: "わに" },
+    { e: "🐢", n: "かめ" },
+    { e: "🦎", n: "とかげ" },
+    { e: "🐍", n: "へび" },
+    { e: "🐲", n: "たつのこ" },
+    { e: "🐉", n: "どらごん" },
+    { e: "🦕", n: "くびながきょうりゅう" },
+    { e: "🦖", n: "ティラノサウルス" },
+    { e: "🐳", n: "しろながすくじら" },
+    { e: "🐋", n: "くじら" },
+    { e: "🐬", n: "いるか" },
+    { e: "🦭", n: "あざらし" },
+    { e: "🐟", n: "さかな" },
+    { e: "🐠", n: "ねったいぎょ" },
+    { e: "🐡", n: "ふぐ" },
+    { e: "🦈", n: "さめ" },
+    { e: "🐙", n: "たこ" },
+    { e: "🦑", n: "いか" },
+    { e: "🦐", n: "えび" },
+    { e: "🦞", n: "ろぶすたー" },
+    { e: "🦀", n: "かに" },
+    { e: "🦪", n: "かき" },
+    { e: "🪼", n: "くらげ" },
+    { e: "🐚", n: "ほらがい" },
+    { e: "🐌", n: "かたつむり" },
+    { e: "🦋", n: "ちょう" },
+    { e: "🐛", n: "いもむし" },
+    { e: "🐜", n: "あり" },
+    { e: "🐝", n: "はち" },
+    { e: "🪲", n: "かぶとむし" },
+    { e: "🐞", n: "てんとうむし" },
+    { e: "🦗", n: "こおろぎ" },
+    { e: "🕷️", n: "くも" },
+    { e: "🦂", n: "さそり" },
+    { e: "🦟", n: "か" },
+    { e: "🪰", n: "はえ" },
+    { e: "🪱", n: "みみず" },
+    { e: "🪳", n: "ごきぶり" },
+    { e: "🦠", n: "びせいぶつ" },
+    { e: "🦮", n: "もうどうけん" },
+    { e: "🐕‍🦺", n: "さぎょういぬ" }
   ];
 
+  var FOODS = [
+    { e: "🍖", n: "おにく", lv: 1 },
+    { e: "🐟", n: "さかな", lv: 4 },
+    { e: "🥕", n: "にんじん", lv: 8 },
+    { e: "🍯", n: "はちみつ", lv: 13 },
+    { e: "🌰", n: "どんぐり", lv: 19 },
+    { e: "🍓", n: "いちご", lv: 26 },
+    { e: "🧀", n: "チーズ", lv: 34 },
+    { e: "🍞", n: "パン", lv: 43 },
+    { e: "🍪", n: "クッキー", lv: 53 },
+    { e: "🍎", n: "りんご", lv: 64 }
+  ];
+
+  var BASE_FEEDS_PER_ANIMAL = 2;
+  var MAX_FEEDS_PER_ANIMAL = 6;
+  var FEEDS_STEP_EVERY_LEVELS = 15;
+  var NEW_ANIMAL_BIAS = 0.7;
+
+  function feedsNeededForLevel(lv) {
+    var extra = Math.floor((lv - 1) / FEEDS_STEP_EVERY_LEVELS);
+    return Math.min(BASE_FEEDS_PER_ANIMAL + extra, MAX_FEEDS_PER_ANIMAL);
+  }
+
   var game = document.getElementById("game");
+  var levelValueEl = document.getElementById("levelValue");
+  var collectedCountEl = document.getElementById("collectedCount");
+  var zukanBtn = document.getElementById("zukanBtn");
+  var newBadge = document.getElementById("newBadge");
   var stageNameEl = document.getElementById("stageName");
   var animalEl = document.getElementById("animalEmoji");
   var progressWrap = document.getElementById("progressWrap");
   var progressLabel = document.getElementById("progressLabel");
   var progressFill = document.getElementById("progressFill");
   var totalFeedsEl = document.getElementById("totalFeeds");
-  var feedBtn = document.getElementById("feedBtn");
+  var foodRow = document.getElementById("foodRow");
   var clearOverlay = document.getElementById("clearOverlay");
+  var clearStatsEl = document.getElementById("clearStats");
   var restartBtn = document.getElementById("restartBtn");
+  var zukanOverlay = document.getElementById("zukanOverlay");
+  var zukanGrid = document.getElementById("zukanGrid");
+  var zukanCount = document.getElementById("zukanCount");
+  var zukanClose = document.getElementById("zukanClose");
 
-  var stageIndex = 0;
-  var feedsInStage = 0;
+  var level = 1;
   var totalFeeds = 0;
+  var feedsInEncounter = 0;
+  var collected = {};
+  var collectedCount = 0;
+  var currentIndex = -1;
+  var currentIsNew = false;
+  var cleared = false;
 
   function isCleared() {
-    return stageIndex === STAGES.length - 1;
+    return collectedCount >= ANIMALS.length;
+  }
+
+  function pickAnimalIndex() {
+    var uncollected = [];
+    for (var i = 0; i < ANIMALS.length; i++) {
+      if (!collected[i]) uncollected.push(i);
+    }
+    if (uncollected.length > 0 && Math.random() < NEW_ANIMAL_BIAS) {
+      return uncollected[Math.floor(Math.random() * uncollected.length)];
+    }
+    return Math.floor(Math.random() * ANIMALS.length);
+  }
+
+  function unlockedFoods() {
+    var list = [];
+    for (var i = 0; i < FOODS.length; i++) {
+      if (FOODS[i].lv <= level) list.push(FOODS[i]);
+    }
+    return list;
+  }
+
+  function startEncounter() {
+    currentIndex = pickAnimalIndex();
+    currentIsNew = !collected[currentIndex];
+    feedsInEncounter = 0;
   }
 
   function render() {
-    var stage = STAGES[stageIndex];
-    stageNameEl.textContent = stage.name;
-    animalEl.textContent = stage.emoji;
+    levelValueEl.textContent = String(level);
+    collectedCountEl.textContent = String(collectedCount);
+
+    var animal = ANIMALS[currentIndex];
+    stageNameEl.textContent = animal.n;
+    animalEl.textContent = animal.e;
+    newBadge.hidden = !currentIsNew;
     totalFeedsEl.textContent = String(totalFeeds);
 
     if (isCleared()) {
       progressWrap.style.visibility = "hidden";
-      feedBtn.disabled = true;
     } else {
       progressWrap.style.visibility = "visible";
-      feedBtn.disabled = false;
-      var remain = stage.need - feedsInStage;
-      progressLabel.innerHTML = "つぎのレベルまで あと <strong>" + remain + "</strong> かい";
-      progressFill.style.width = Math.round((feedsInStage / stage.need) * 100) + "%";
+      var need = feedsNeededForLevel(level);
+      var remain = need - feedsInEncounter;
+      progressLabel.innerHTML = "このこに あと <strong>" + remain + "</strong> かい";
+      progressFill.style.width = Math.round((feedsInEncounter / need) * 100) + "%";
+    }
+
+    renderFoodRow();
+  }
+
+  function renderFoodRow() {
+    var foods = unlockedFoods();
+    foodRow.innerHTML = "";
+    for (var i = 0; i < foods.length; i++) {
+      (function (food) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "food-btn";
+        btn.textContent = food.e;
+        btn.title = food.n + " をあげる";
+        btn.setAttribute("aria-label", food.n + " をあげる");
+        btn.disabled = cleared;
+        btn.addEventListener("click", function () { feed(food.e); });
+        foodRow.appendChild(btn);
+      })(foods[i]);
     }
   }
 
-  function spawnFlyingMeat() {
-    var meat = document.createElement("span");
-    meat.className = "flying-meat";
-    meat.textContent = "🍖";
-    game.appendChild(meat);
-    meat.addEventListener("animationend", function () {
-      meat.remove();
-    });
+  function spawnFlyingFood(emoji) {
+    var f = document.createElement("span");
+    f.className = "flying-food";
+    f.textContent = emoji;
+    game.appendChild(f);
+    f.addEventListener("animationend", function () { f.remove(); });
   }
 
   function bounceAnimal() {
@@ -380,19 +741,20 @@
     animalEl.classList.add("bounce");
   }
 
-  function showLevelUpToast(text) {
+  function showToast(text) {
+    var existing = game.querySelectorAll(".level-up-toast");
+    for (var i = 0; i < existing.length; i++) existing[i].remove();
+
     var toast = document.createElement("div");
     toast.className = "level-up-toast";
-    toast.textContent = text;
+    toast.innerHTML = text;
     game.appendChild(toast);
-    toast.addEventListener("animationend", function () {
-      toast.remove();
-    });
+    toast.addEventListener("animationend", function () { toast.remove(); });
   }
 
   function spawnConfetti() {
-    var pieces = ["🎉", "✨", "🦁", "⭐", "🍖"];
-    for (var i = 0; i < 24; i++) {
+    var pieces = ["🎉", "✨", "🏆", "⭐", "🎊"];
+    for (var i = 0; i < 26; i++) {
       (function (i) {
         var el = document.createElement("span");
         el.className = "confetti";
@@ -407,44 +769,85 @@
   }
 
   function showClear() {
+    cleared = true;
+    clearStatsEl.textContent = "さいしゅう Lv." + level + " / えさをあげた かいすう " + totalFeeds + " かい";
     clearOverlay.hidden = false;
     spawnConfetti();
   }
 
-  function feed() {
-    if (isCleared()) return;
+  function feed(foodEmoji) {
+    if (cleared) return;
 
     totalFeeds++;
-    feedsInStage++;
-    spawnFlyingMeat();
+    feedsInEncounter++;
+    spawnFlyingFood(foodEmoji);
     bounceAnimal();
 
-    var stage = STAGES[stageIndex];
-    if (feedsInStage >= stage.need) {
-      feedsInStage = 0;
-      stageIndex++;
+    if (feedsInEncounter >= feedsNeededForLevel(level)) {
+      var wasNew = currentIsNew;
+      if (wasNew) {
+        collected[currentIndex] = true;
+        collectedCount++;
+      }
+      level++;
+
       if (isCleared()) {
+        cleared = true;
         render();
         setTimeout(showClear, 500);
         return;
       }
-      showLevelUpToast(STAGES[stageIndex].name + " に レベルアップ!");
+
+      var unlockedFood = null;
+      for (var i = 0; i < FOODS.length; i++) {
+        if (FOODS[i].lv === level) { unlockedFood = FOODS[i]; break; }
+      }
+      var toastText = "Lv." + level + " に なった!";
+      if (unlockedFood) {
+        toastText += "<br>" + unlockedFood.e + " " + unlockedFood.n + " が つかえるように!";
+      }
+      showToast(toastText);
+
+      startEncounter();
     }
 
     render();
   }
 
+  function renderZukan() {
+    zukanCount.textContent = collectedCount + " / " + ANIMALS.length + " しゅうしゅう";
+    var html = "";
+    for (var i = 0; i < ANIMALS.length; i++) {
+      if (collected[i]) {
+        html += '<div class="zukan-cell collected" title="' + ANIMALS[i].n + '">' + ANIMALS[i].e + '</div>';
+      } else {
+        html += '<div class="zukan-cell locked">?</div>';
+      }
+    }
+    zukanGrid.innerHTML = html;
+  }
+
   function reset() {
-    stageIndex = 0;
-    feedsInStage = 0;
+    level = 1;
     totalFeeds = 0;
+    collected = {};
+    collectedCount = 0;
+    cleared = false;
     clearOverlay.hidden = true;
+    startEncounter();
     render();
   }
 
-  feedBtn.addEventListener("click", feed);
+  zukanBtn.addEventListener("click", function () {
+    renderZukan();
+    zukanOverlay.hidden = false;
+  });
+  zukanClose.addEventListener("click", function () {
+    zukanOverlay.hidden = true;
+  });
   restartBtn.addEventListener("click", reset);
 
+  startEncounter();
   render();
 })();
 </script>
