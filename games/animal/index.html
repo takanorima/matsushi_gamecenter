@@ -503,11 +503,44 @@
     gap: .3rem .2rem;
   }
   .room-cell {
+    position: relative;
     width: 4.2rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     padding-top: .3rem;
+  }
+  .room-wish {
+    position: absolute;
+    top: -.2rem;
+    right: .2rem;
+    width: 1.9rem;
+    height: 1.9rem;
+    background: var(--surface);
+    border: 2px solid var(--accent);
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+    touch-action: manipulation;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, .25);
+    animation: wishFloat 1.8s ease-in-out infinite;
+  }
+  .room-wish.shake {
+    animation: wishShake .4s ease;
+  }
+  @keyframes wishFloat {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-4px); }
+  }
+  @keyframes wishShake {
+    0%, 100% { transform: translateX(0); }
+    25%      { transform: translateX(-4px); }
+    75%      { transform: translateX(4px); }
   }
   .room-cell .room-emoji {
     font-size: 2.1rem;
@@ -917,6 +950,7 @@
   var selectedFoodIndex = 0;
   var coins = 0;
   var decorations = {};
+  var wishes = {};
   var MIN_GROW_SCALE = .55;
   var MAX_GROW_SCALE = 1.15;
 
@@ -1192,6 +1226,41 @@
     renderRoomShop();
   }
 
+  function refreshWishes() {
+    wishes = {};
+    var collectedIndices = [];
+    for (var i = 0; i < ANIMALS.length; i++) {
+      if (collected[i]) collectedIndices.push(i);
+    }
+    if (collectedIndices.length === 0) return;
+
+    var pool = collectedIndices.slice();
+    var wishCount = Math.min(3, pool.length);
+    for (var w = 0; w < wishCount; w++) {
+      var pickIndex = Math.floor(Math.random() * pool.length);
+      var animalIndex = pool.splice(pickIndex, 1)[0];
+      var deco = DECORATIONS[Math.floor(Math.random() * DECORATIONS.length)];
+      wishes[animalIndex] = deco.id;
+    }
+  }
+
+  function handleWishClick(animalIndex, decoId, bubbleEl) {
+    var item = null;
+    for (var i = 0; i < DECORATIONS.length; i++) {
+      if (DECORATIONS[i].id === decoId) { item = DECORATIONS[i]; break; }
+    }
+    if (!item) return;
+
+    if (coins >= item.cost) {
+      delete wishes[animalIndex];
+      buyDecoration(decoId);
+    } else {
+      bubbleEl.classList.remove("shake");
+      void bubbleEl.offsetWidth;
+      bubbleEl.classList.add("shake");
+    }
+  }
+
   function renderRoom() {
     roomCount.textContent = collectedCount + " / " + ANIMALS.length + " なかま";
     if (collectedCount === 0) {
@@ -1216,12 +1285,36 @@
       var style = "animation-name:" + animName +
         "; animation-duration:" + duration + "s" +
         "; animation-delay:" + delay + "s";
-      html += '<div class="room-cell">' +
+
+      var wishHtml = "";
+      if (wishes[i]) {
+        var wishDeco = null;
+        for (var wd = 0; wd < DECORATIONS.length; wd++) {
+          if (DECORATIONS[wd].id === wishes[i]) { wishDeco = DECORATIONS[wd]; break; }
+        }
+        if (wishDeco) {
+          wishHtml = '<button type="button" class="room-wish" data-animal="' + i + '" data-deco="' + wishDeco.id +
+            '" title="' + wishDeco.n + ' がほしい(🪙' + wishDeco.cost + ')" aria-label="' +
+            wishDeco.n + ' がほしい">' + wishDeco.e + '</button>';
+        }
+      }
+
+      html += '<div class="room-cell">' + wishHtml +
         '<span class="room-emoji" style="' + style + '">' + ANIMALS[i].e + '</span>' +
         '<span class="room-name">' + ANIMALS[i].n + '</span>' +
         '</div>';
     }
     roomGrid.innerHTML = html;
+
+    var wishButtons = roomGrid.querySelectorAll(".room-wish");
+    for (var b = 0; b < wishButtons.length; b++) {
+      wishButtons[b].addEventListener("click", function (e) {
+        e.stopPropagation();
+        var idx = parseInt(this.getAttribute("data-animal"), 10);
+        var decoId = this.getAttribute("data-deco");
+        handleWishClick(idx, decoId, this);
+      });
+    }
   }
 
   function reset() {
@@ -1233,6 +1326,7 @@
     selectedFoodIndex = 0;
     coins = 0;
     decorations = {};
+    wishes = {};
     updateCoinDisplays();
     clearOverlay.hidden = true;
     startEncounter();
@@ -1247,6 +1341,7 @@
     zukanOverlay.hidden = true;
   });
   roomBtn.addEventListener("click", function () {
+    refreshWishes();
     renderRoom();
     renderRoomShop();
     roomOverlay.hidden = false;
