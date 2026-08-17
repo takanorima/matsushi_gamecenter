@@ -287,9 +287,9 @@
     outline-offset: 2px;
   }
   .food-btn.selected {
-    background: linear-gradient(180deg, #fff2c2, var(--accent));
-    border-color: var(--accent);
-    box-shadow: 0 4px 0 #c96a35;
+    background: linear-gradient(180deg, #ffb3b3, #e53935);
+    border-color: #e53935;
+    box-shadow: 0 4px 0 #b71c1c;
     transform: translateY(-2px);
   }
 
@@ -434,6 +434,7 @@
   .zukan-head h2 {
     margin: 0;
     font-size: 1.15rem;
+    white-space: nowrap;
   }
   .zukan-head span {
     font-size: .85rem;
@@ -457,6 +458,7 @@
     padding: .2rem;
   }
   .zukan-cell {
+    position: relative;
     aspect-ratio: 1;
     background: var(--paper);
     border: 1px solid var(--border);
@@ -465,6 +467,8 @@
     align-items: center;
     justify-content: center;
     font-size: 1.5rem;
+    font: inherit;
+    padding: 0;
   }
   .zukan-cell.locked {
     color: var(--ink-faint);
@@ -472,6 +476,32 @@
   }
   .zukan-cell.collected {
     background: linear-gradient(180deg, var(--sub), var(--main));
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .zukan-cell.collected.in-room {
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 2px var(--surface) inset, 0 0 8px rgba(255, 159, 107, .6);
+  }
+  .zukan-cell .zukan-check {
+    position: absolute;
+    top: -.35rem;
+    right: -.35rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+    font-size: .65rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .25);
+  }
+  .zukan-hint {
+    margin: 0 0 .6rem;
+    font-size: .8rem;
+    color: var(--ink-soft);
   }
 
   .room-scene {
@@ -691,12 +721,12 @@
     <p class="eyebrow">🎮 まつしげーむせんたー</p>
     <h1>動物育成ゲーム</h1>
     <p class="credit">花乃子さんの企画をもとに制作</p>
-    <p class="goal">えさをあげて、120しゅるいの どうぶつを ぜんぶ あつめよう!</p>
+    <p class="goal">えさをあげて、<strong id="goalTotal">0</strong>しゅるいの どうぶつを ぜんぶ あつめよう!</p>
   </header>
 
   <div class="stat-row">
     <span class="stat-pill">Lv. <strong id="levelValue">1</strong></span>
-    <span class="stat-pill">📖 <strong id="collectedCount">0</strong> / 120</span>
+    <span class="stat-pill">📖 <strong id="collectedCount">0</strong> / <strong id="statTotal">0</strong></span>
     <span class="stat-pill">🪙 <strong id="coinValue">0</strong></span>
     <button type="button" class="zukan-btn" id="zukanBtn">図鑑をみる</button>
     <button type="button" class="zukan-btn" id="roomBtn">🏠 おへやをみる</button>
@@ -734,7 +764,7 @@
   <div class="clear-card">
     <p class="clear-emoji">🏆🎉</p>
     <h2>コレクション コンプリート!</h2>
-    <p>120しゅるい ぜんぶの どうぶつを あつめたね!</p>
+    <p><strong id="clearTotal">0</strong>しゅるい ぜんぶの どうぶつを あつめたね!</p>
     <p class="clear-stats" id="clearStats"></p>
     <button type="button" class="feed-btn" id="restartBtn">もういちど あそぶ</button>
   </div>
@@ -747,6 +777,7 @@
       <span id="zukanCount"></span>
       <button type="button" class="zukan-close" id="zukanClose" aria-label="とじる">✕</button>
     </div>
+    <p class="zukan-hint">集めた どうぶつを タップすると、おへやに よんだり かえしたり できるよ(<span style="color:var(--accent)">★</span> = おへやに いる)</p>
     <div class="zukan-grid" id="zukanGrid"></div>
   </div>
 </div>
@@ -758,6 +789,7 @@
       <span id="roomCount"></span>
       <button type="button" class="zukan-close" id="roomClose" aria-label="とじる">✕</button>
     </div>
+    <button type="button" class="zukan-btn" id="roomPickBtn" style="align-self:center; margin-bottom:.6rem;">🐾 どうぶつを えらぶ(図鑑をひらく)</button>
     <div class="room-deco-row" id="roomDecoShelf"></div>
     <div class="room-scene" id="roomScene">
       <div class="room-clouds" id="roomClouds" aria-hidden="true"></div>
@@ -773,53 +805,53 @@
 <script>
 (function () {
   var ANIMALS = [
-    { e: "🐶", n: "いぬ(かお)" },
+    { e: "🐶", n: "こいぬ" },
     { e: "🐕", n: "いぬ" },
     { e: "🐩", n: "プードル" },
     { e: "🐺", n: "おおかみ" },
     { e: "🦊", n: "きつね" },
-    { e: "🐱", n: "ねこ(かお)" },
+    { e: "🐱", n: "こねこ" },
     { e: "🐈", n: "ねこ" },
     { e: "🐈‍⬛", n: "くろねこ" },
     { e: "🦁", n: "ライオン" },
-    { e: "🐯", n: "とら(かお)" },
+    { e: "🐯", n: "ことら" },
     { e: "🐅", n: "とら" },
     { e: "🐆", n: "ひょう" },
-    { e: "🐴", n: "うま(かお)" },
+    { e: "🐴", n: "こうま" },
     { e: "🐎", n: "うま" },
     { e: "🦄", n: "ユニコーン" },
     { e: "🦓", n: "しまうま" },
     { e: "🦌", n: "しか" },
-    { e: "🐮", n: "うし(かお)" },
+    { e: "🐮", n: "こうし" },
     { e: "🐄", n: "うし" },
     { e: "🐂", n: "おうし" },
     { e: "🐃", n: "すいぎゅう" },
-    { e: "🐷", n: "ぶた(かお)" },
+    { e: "🐷", n: "こぶた" },
     { e: "🐖", n: "ぶた" },
     { e: "🐗", n: "いのしし" },
     { e: "🐏", n: "おひつじ" },
     { e: "🐑", n: "ひつじ" },
     { e: "🐐", n: "やぎ" },
     { e: "🦙", n: "らま" },
-    { e: "🐪", n: "ひとこぶらくだ" },
-    { e: "🐫", n: "ふたこぶらくだ" },
+    { e: "🐪", n: "ひとこぶ" },
+    { e: "🐫", n: "ふたこぶ" },
     { e: "🦒", n: "きりん" },
     { e: "🐘", n: "ぞう" },
     { e: "🦣", n: "マンモス" },
     { e: "🦏", n: "さい" },
     { e: "🦛", n: "かば" },
-    { e: "🐭", n: "ねずみ(かお)" },
+    { e: "🐭", n: "こねずみ" },
     { e: "🐁", n: "ねずみ" },
-    { e: "🐀", n: "どぶねずみ" },
+    { e: "🐀", n: "おおねずみ" },
     { e: "🐹", n: "ハムスター" },
-    { e: "🐰", n: "うさぎ(かお)" },
+    { e: "🐰", n: "こうさぎ" },
     { e: "🐇", n: "うさぎ" },
     { e: "🐿️", n: "りす" },
     { e: "🦫", n: "ビーバー" },
     { e: "🦔", n: "はりねずみ" },
     { e: "🦇", n: "こうもり" },
     { e: "🐻", n: "くま" },
-    { e: "🐻‍❄️", n: "ほっきょくぐま" },
+    { e: "🐻‍❄️", n: "しろくま" },
     { e: "🐨", n: "こあら" },
     { e: "🐼", n: "ぱんだ" },
     { e: "🦥", n: "なまけもの" },
@@ -829,13 +861,13 @@
     { e: "🦡", n: "あなぐま" },
     { e: "🦝", n: "あらいぐま" },
     { e: "🦬", n: "ばいそん" },
-    { e: "🐵", n: "さる(かお)" },
+    { e: "🐵", n: "こざる" },
     { e: "🐒", n: "さる" },
     { e: "🦍", n: "ごりら" },
     { e: "🦧", n: "おらんうーたん" },
     { e: "🐔", n: "にわとり" },
     { e: "🐓", n: "おんどり" },
-    { e: "🐣", n: "うまれたてひよこ" },
+    { e: "🐣", n: "たまご" },
     { e: "🐤", n: "ひよこ" },
     { e: "🐥", n: "こひよこ" },
     { e: "🐦", n: "とり" },
@@ -858,14 +890,14 @@
     { e: "🐍", n: "へび" },
     { e: "🐲", n: "たつのこ" },
     { e: "🐉", n: "どらごん" },
-    { e: "🦕", n: "くびながきょうりゅう" },
-    { e: "🦖", n: "ティラノサウルス" },
-    { e: "🐳", n: "しろながすくじら" },
+    { e: "🦕", n: "きょうりゅう" },
+    { e: "🦖", n: "ティラノ" },
+    { e: "🐳", n: "しろくじら" },
     { e: "🐋", n: "くじら" },
     { e: "🐬", n: "いるか" },
     { e: "🦭", n: "あざらし" },
     { e: "🐟", n: "さかな" },
-    { e: "🐠", n: "ねったいぎょ" },
+    { e: "🐠", n: "うみのさかな" },
     { e: "🐡", n: "ふぐ" },
     { e: "🦈", n: "さめ" },
     { e: "🐙", n: "たこ" },
@@ -875,24 +907,24 @@
     { e: "🦀", n: "かに" },
     { e: "🦪", n: "かき" },
     { e: "🪼", n: "くらげ" },
-    { e: "🐚", n: "ほらがい" },
-    { e: "🐌", n: "かたつむり" },
+    { e: "🐚", n: "かいがら" },
     { e: "🦋", n: "ちょう" },
-    { e: "🐛", n: "いもむし" },
-    { e: "🐜", n: "あり" },
-    { e: "🐝", n: "はち" },
-    { e: "🪲", n: "かぶとむし" },
-    { e: "🐞", n: "てんとうむし" },
-    { e: "🦗", n: "こおろぎ" },
-    { e: "🕷️", n: "くも" },
-    { e: "🦂", n: "さそり" },
-    { e: "🦟", n: "か" },
-    { e: "🪰", n: "はえ" },
-    { e: "🪱", n: "みみず" },
-    { e: "🪳", n: "ごきぶり" },
     { e: "🦠", n: "びせいぶつ" },
     { e: "🦮", n: "もうどうけん" },
-    { e: "🐕‍🦺", n: "さぎょういぬ" }
+    { e: "🐕‍🦺", n: "はたらくいぬ" },
+    { e: "👽", n: "うちゅうじん" },
+    { e: "👾", n: "モンスター" },
+    { e: "🤖", n: "ロボット" },
+    { e: "👻", n: "おばけ" },
+    { e: "⛄", n: "ゆきだるま" },
+    { e: "🎃", n: "かぼちゃおばけ" },
+    { e: "🧜", n: "マーメイド" },
+    { e: "🧞", n: "ランプのせいれい" },
+    { e: "🧛", n: "きゅうけつき" },
+    { e: "🧟", n: "ゾンビ" },
+    { e: "🧙", n: "まほうつかい" },
+    { e: "☺️", n: "にっこり" },
+    { e: "😺", n: "わらうねこ" }
   ];
 
   var FOODS = [
@@ -945,6 +977,7 @@
   var roomClouds = document.getElementById("roomClouds");
   var roomCount = document.getElementById("roomCount");
   var roomClose = document.getElementById("roomClose");
+  var roomPickBtn = document.getElementById("roomPickBtn");
   var coinValueEl = document.getElementById("coinValue");
   var shopCoinValueEl = document.getElementById("shopCoinValue");
   var roomShopRow = document.getElementById("roomShopRow");
@@ -971,6 +1004,8 @@
   var coins = 0;
   var decorations = {};
   var wishes = {};
+  var roomMembers = {};
+  var transitioning = false;
   var MIN_GROW_SCALE = .55;
   var MAX_GROW_SCALE = 1.15;
 
@@ -1141,7 +1176,7 @@
   }
 
   function feed(foodEmoji) {
-    if (cleared) return;
+    if (cleared || transitioning) return;
 
     totalFeeds++;
     feedsInEncounter++;
@@ -1149,6 +1184,7 @@
     bounceAnimal();
 
     if (feedsInEncounter >= feedsNeededForLevel(level)) {
+      transitioning = true;
       playCollectFlyAnimation(ANIMALS[currentIndex].e);
 
       var wasNew = currentIsNew;
@@ -1180,10 +1216,28 @@
       }
       showToast(toastText);
 
-      startEncounter();
+      render();
+      progressFill.style.width = "100%";
+      progressLabel.innerHTML = "このこに あと <strong>0</strong> かい";
+
+      setTimeout(function () {
+        startEncounter();
+        transitioning = false;
+        render();
+      }, 400);
+      return;
     }
 
     render();
+  }
+
+  function toggleRoomMember(index) {
+    if (roomMembers[index]) {
+      delete roomMembers[index];
+    } else {
+      roomMembers[index] = true;
+    }
+    renderZukan();
   }
 
   function renderZukan() {
@@ -1191,12 +1245,22 @@
     var html = "";
     for (var i = 0; i < ANIMALS.length; i++) {
       if (collected[i]) {
-        html += '<div class="zukan-cell collected" title="' + ANIMALS[i].n + '">' + ANIMALS[i].e + '</div>';
+        var inRoom = !!roomMembers[i];
+        html += '<button type="button" class="zukan-cell collected' + (inRoom ? " in-room" : "") +
+          '" data-animal="' + i + '" title="' + ANIMALS[i].n + (inRoom ? "(おへやに いる)" : "") + '">' +
+          ANIMALS[i].e + (inRoom ? '<span class="zukan-check">★</span>' : "") + '</button>';
       } else {
         html += '<div class="zukan-cell locked">?</div>';
       }
     }
     zukanGrid.innerHTML = html;
+
+    var cells = zukanGrid.querySelectorAll(".zukan-cell.collected");
+    for (var c = 0; c < cells.length; c++) {
+      cells[c].addEventListener("click", function () {
+        toggleRoomMember(parseInt(this.getAttribute("data-animal"), 10));
+      });
+    }
   }
 
   function setupRoomClouds() {
@@ -1258,13 +1322,13 @@
 
   function refreshWishes() {
     wishes = {};
-    var collectedIndices = [];
+    var roomIndices = [];
     for (var i = 0; i < ANIMALS.length; i++) {
-      if (collected[i]) collectedIndices.push(i);
+      if (roomMembers[i]) roomIndices.push(i);
     }
-    if (collectedIndices.length === 0) return;
+    if (roomIndices.length === 0) return;
 
-    var pool = collectedIndices.slice();
+    var pool = roomIndices.slice();
     var wishCount = Math.min(3, pool.length);
     for (var w = 0; w < wishCount; w++) {
       var pickIndex = Math.floor(Math.random() * pool.length);
@@ -1294,12 +1358,24 @@
   var ROOM_LANE_COUNT = 1;
   var ROOM_COLUMN_WIDTH_REM = 4.5;
 
+  function roomMemberCount() {
+    var n = 0;
+    for (var i = 0; i < ANIMALS.length; i++) {
+      if (roomMembers[i]) n++;
+    }
+    return n;
+  }
+
   function renderRoom() {
-    roomCount.textContent = collectedCount + " / " + ANIMALS.length + " なかま";
-    if (collectedCount === 0) {
+    var memberCount = roomMemberCount();
+    roomCount.textContent = memberCount + " ひき";
+
+    if (memberCount === 0) {
       roomDecoShelf.innerHTML = "";
       roomGrid.style.width = "";
-      roomGrid.innerHTML = '<p class="room-empty">まだ だれも いないよ。<br>えさをあげて なかまを ふやそう!</p>';
+      roomGrid.innerHTML = collectedCount === 0
+        ? '<p class="room-empty">まだ だれも いないよ。<br>えさをあげて なかまを ふやそう!</p>'
+        : '<p class="room-empty">図鑑から すきな どうぶつを えらんで、<br>おへやに よんであげよう!</p>';
       return;
     }
 
@@ -1319,7 +1395,7 @@
 
     var order = 0;
     for (var i = 0; i < ANIMALS.length; i++) {
-      if (!collected[i]) continue;
+      if (!roomMembers[i]) continue;
       var lane = order % ROOM_LANE_COUNT;
       var column = Math.floor(order / ROOM_LANE_COUNT);
       order++;
@@ -1354,7 +1430,7 @@
     }
     roomGrid.innerHTML = html;
 
-    var columnsUsed = Math.ceil(collectedCount / ROOM_LANE_COUNT);
+    var columnsUsed = Math.ceil(memberCount / ROOM_LANE_COUNT);
     var gridWidth = columnsUsed * ROOM_COLUMN_WIDTH_REM + 1;
     roomGrid.style.width = gridWidth + "rem";
 
@@ -1375,10 +1451,12 @@
     collected = {};
     collectedCount = 0;
     cleared = false;
+    transitioning = false;
     selectedFoodIndex = 0;
     coins = 0;
     decorations = {};
     wishes = {};
+    roomMembers = {};
     updateCoinDisplays();
     clearOverlay.hidden = true;
     startEncounter();
@@ -1401,8 +1479,14 @@
   roomClose.addEventListener("click", function () {
     roomOverlay.hidden = true;
   });
+  roomPickBtn.addEventListener("click", function () {
+    roomOverlay.hidden = true;
+    renderZukan();
+    zukanOverlay.hidden = false;
+  });
   restartBtn.addEventListener("click", reset);
   window.addEventListener("keydown", function (e) {
+    if (e.repeat) return;
     if (cleared || zukanOverlay.hidden === false || roomOverlay.hidden === false) return;
     if (e.key === "x" || e.key === "X") {
       feedKeyIndicator.classList.remove("pressed");
@@ -1416,6 +1500,10 @@
       feedKeyIndicator.classList.remove("pressed");
     }
   });
+
+  document.getElementById("goalTotal").textContent = String(ANIMALS.length);
+  document.getElementById("statTotal").textContent = String(ANIMALS.length);
+  document.getElementById("clearTotal").textContent = String(ANIMALS.length);
 
   setupRoomClouds();
   updateCoinDisplays();
