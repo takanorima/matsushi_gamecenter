@@ -454,6 +454,10 @@
     { emoji:"🍬", sound:"assets/sfx/chew_candy.wav" },
     { emoji:"🍜", sound:"assets/sfx/chew_ramen.wav" }
   ];
+  /* ページ読み込み時にあらかじめ読み込んでおく。そうしないと、
+     それぞれの食べものを最初に食べた瞬間だけ読み込みが間に合わず、
+     代用音(WebAudio)が鳴ってしまう。 */
+  FOODS_MAIN.forEach(function(food){ getChewSound(food.sound); });
 
   var currentStageIndex = 0;
   var stageToken = 0;
