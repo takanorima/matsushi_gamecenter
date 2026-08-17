@@ -10,8 +10,8 @@
     --main: #a7c6ff;
     --main-ink: #1c2b52;
     --sub: #cbf0ff;
-    --paper: #eef4ff;
-    --paper-line: rgba(70, 96, 160, 0.08);
+    --paper: #fff8ec;
+    --paper-line: rgba(120, 96, 40, 0.05);
     --surface: #ffffff;
     --ink: #24304d;
     --ink-soft: #5c6a8c;
@@ -526,29 +526,22 @@
     0%   { transform: translateX(-3rem); }
     100% { transform: translateX(calc(100% + 3rem)); }
   }
-  .room-deco-row {
-    position: relative;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: .3rem;
-    margin-bottom: .6rem;
-    padding: .4rem;
-    border-radius: 10px;
-    background: var(--paper);
-    border: 1px solid var(--border);
-  }
-  .room-deco-row:empty {
-    display: none;
-  }
-  .room-deco-item {
-    width: 2.6rem;
-    height: 2.6rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.7rem;
+  .room-deco-placed {
+    position: absolute;
+    font-size: 1.9rem;
+    line-height: 1;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    z-index: 4;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .18));
     animation: decoSway 4s ease-in-out infinite;
+  }
+  .room-deco-placed.dragging {
+    cursor: grabbing;
+    animation: none;
+    transform: scale(1.2);
+    z-index: 6;
   }
   @keyframes decoSway {
     0%, 100% { transform: rotate(-3deg); }
@@ -790,7 +783,7 @@
       <button type="button" class="zukan-close" id="roomClose" aria-label="とじる">✕</button>
     </div>
     <button type="button" class="zukan-btn" id="roomPickBtn" style="align-self:center; margin-bottom:.6rem;">🐾 どうぶつを えらぶ(図鑑をひらく)</button>
-    <div class="room-deco-row" id="roomDecoShelf"></div>
+    <p class="room-shop-label">かざりは ドラッグで すきな ばしょに うごかせるよ</p>
     <div class="room-scene" id="roomScene">
       <div class="room-clouds" id="roomClouds" aria-hidden="true"></div>
       <div class="room-grid" id="roomGrid"></div>
@@ -973,7 +966,6 @@
   var roomBtn = document.getElementById("roomBtn");
   var roomOverlay = document.getElementById("roomOverlay");
   var roomGrid = document.getElementById("roomGrid");
-  var roomDecoShelf = document.getElementById("roomDecoShelf");
   var roomClouds = document.getElementById("roomClouds");
   var roomCount = document.getElementById("roomCount");
   var roomClose = document.getElementById("roomClose");
@@ -984,11 +976,20 @@
 
   var DECORATIONS = [
     { id: "rock", e: "🪨", n: "いし", cost: 5 },
+    { id: "log", e: "🪵", n: "きのえだ", cost: 6 },
+    { id: "pot", e: "🪴", n: "はちうえ", cost: 6 },
     { id: "mushroom", e: "🍄", n: "きのこ", cost: 8 },
+    { id: "balloon", e: "🎈", n: "ふうせん", cost: 10 },
+    { id: "tulip", e: "🌷", n: "チューリップ", cost: 9 },
     { id: "sunflower", e: "🌻", n: "ひまわり", cost: 12 },
+    { id: "chair", e: "🪑", n: "いす", cost: 14 },
     { id: "tree", e: "🌳", n: "き", cost: 18 },
+    { id: "sun", e: "☀️", n: "たいよう", cost: 20 },
+    { id: "star", e: "⭐", n: "ほし", cost: 22 },
+    { id: "moon", e: "🌙", n: "つき", cost: 24 },
     { id: "fountain", e: "⛲", n: "ふんすい", cost: 30 },
-    { id: "rainbow", e: "🌈", n: "にじ", cost: 50 }
+    { id: "rainbow", e: "🌈", n: "にじ", cost: 50 },
+    { id: "house", e: "🏡", n: "おうち", cost: 45 }
   ];
   var COINS_PER_NEW_ANIMAL = 5;
 
@@ -1003,9 +1004,13 @@
   var selectedFoodIndex = 0;
   var coins = 0;
   var decorations = {};
+  var decorationPlacements = [];
+  var nextPlacementId = 1;
   var wishes = {};
   var roomMembers = {};
   var transitioning = false;
+  var feedCooldown = false;
+  var FEED_COOLDOWN_MS = 350;
   var MIN_GROW_SCALE = .55;
   var MAX_GROW_SCALE = 1.15;
 
@@ -1062,7 +1067,7 @@
     }
 
     renderFoodRow();
-    feedKeyIndicator.classList.toggle("dim", cleared);
+    feedKeyIndicator.classList.toggle("dim", cleared || feedCooldown);
   }
 
   function getSelectedFoodEmoji() {
@@ -1176,7 +1181,13 @@
   }
 
   function feed(foodEmoji) {
-    if (cleared || transitioning) return;
+    if (cleared || transitioning || feedCooldown) return;
+
+    feedCooldown = true;
+    setTimeout(function () {
+      feedCooldown = false;
+      if (!cleared) feedKeyIndicator.classList.remove("dim");
+    }, FEED_COOLDOWN_MS);
 
     totalFeeds++;
     feedsInEncounter++;
@@ -1315,6 +1326,11 @@
 
     coins -= item.cost;
     decorations[id] = (decorations[id] || 0) + 1;
+
+    var defaultX = 10 + (decorationPlacements.length * 42) % 260;
+    var defaultY = 10 + (decorationPlacements.length % 3) * 24;
+    decorationPlacements.push({ pid: nextPlacementId++, deco: id, x: defaultX, y: defaultY });
+
     updateCoinDisplays();
     renderRoom();
     renderRoomShop();
@@ -1371,24 +1387,12 @@
     roomCount.textContent = memberCount + " ひき";
 
     if (memberCount === 0) {
-      roomDecoShelf.innerHTML = "";
       roomGrid.style.width = "";
       roomGrid.innerHTML = collectedCount === 0
         ? '<p class="room-empty">まだ だれも いないよ。<br>えさをあげて なかまを ふやそう!</p>'
         : '<p class="room-empty">図鑑から すきな どうぶつを えらんで、<br>おへやに よんであげよう!</p>';
       return;
     }
-
-    var decoHtml = "";
-    for (var d = 0; d < DECORATIONS.length; d++) {
-      var owned = decorations[DECORATIONS[d].id] || 0;
-      for (var k = 0; k < owned; k++) {
-        var decoDelay = (-1 * ((d * 53 + k * 17) % 40) / 10).toFixed(2);
-        decoHtml += '<span class="room-deco-item" style="animation-delay:' + decoDelay + 's">' +
-          DECORATIONS[d].e + '</span>';
-      }
-    }
-    roomDecoShelf.innerHTML = decoHtml;
 
     var lanesHtml = [];
     for (var lc = 0; lc < ROOM_LANE_COUNT; lc++) lanesHtml.push("");
@@ -1428,6 +1432,20 @@
     for (var l = 0; l < ROOM_LANE_COUNT; l++) {
       html += '<div class="room-lane">' + lanesHtml[l] + '</div>';
     }
+
+    for (var p = 0; p < decorationPlacements.length; p++) {
+      var placement = decorationPlacements[p];
+      var decoItem = null;
+      for (var dd = 0; dd < DECORATIONS.length; dd++) {
+        if (DECORATIONS[dd].id === placement.deco) { decoItem = DECORATIONS[dd]; break; }
+      }
+      if (!decoItem) continue;
+      var swayDelay = (-1 * (placement.pid * 7 % 40) / 10).toFixed(2);
+      html += '<span class="room-deco-placed" data-pid="' + placement.pid + '" style="left:' +
+        placement.x + 'px; top:' + placement.y + 'px; animation-delay:' + swayDelay + 's" title="' +
+        decoItem.n + '">' + decoItem.e + '</span>';
+    }
+
     roomGrid.innerHTML = html;
 
     var columnsUsed = Math.ceil(memberCount / ROOM_LANE_COUNT);
@@ -1443,6 +1461,53 @@
         handleWishClick(idx, decoId, this);
       });
     }
+
+    var decoEls = roomGrid.querySelectorAll(".room-deco-placed");
+    for (var de = 0; de < decoEls.length; de++) {
+      makeDecoDraggable(decoEls[de]);
+    }
+  }
+
+  function makeDecoDraggable(el) {
+    var pid = parseInt(el.getAttribute("data-pid"), 10);
+    var placement = null;
+    for (var i = 0; i < decorationPlacements.length; i++) {
+      if (decorationPlacements[i].pid === pid) { placement = decorationPlacements[i]; break; }
+    }
+    if (!placement) return;
+
+    var offsetX = 0;
+    var offsetY = 0;
+
+    function onMove(ev) {
+      var gridRect = roomGrid.getBoundingClientRect();
+      var maxX = Math.max(0, roomGrid.offsetWidth - el.offsetWidth);
+      var maxY = Math.max(0, roomGrid.offsetHeight - el.offsetHeight);
+      var x = Math.min(Math.max(ev.clientX - gridRect.left - offsetX, 0), maxX);
+      var y = Math.min(Math.max(ev.clientY - gridRect.top - offsetY, 0), maxY);
+      el.style.left = x + "px";
+      el.style.top = y + "px";
+      placement.x = x;
+      placement.y = y;
+    }
+
+    function onUp(ev) {
+      el.classList.remove("dragging");
+      el.releasePointerCapture(ev.pointerId);
+      el.removeEventListener("pointermove", onMove);
+      el.removeEventListener("pointerup", onUp);
+    }
+
+    el.addEventListener("pointerdown", function (e) {
+      e.preventDefault();
+      var elRect = el.getBoundingClientRect();
+      offsetX = e.clientX - elRect.left;
+      offsetY = e.clientY - elRect.top;
+      el.classList.add("dragging");
+      el.setPointerCapture(e.pointerId);
+      el.addEventListener("pointermove", onMove);
+      el.addEventListener("pointerup", onUp);
+    });
   }
 
   function reset() {
@@ -1452,9 +1517,12 @@
     collectedCount = 0;
     cleared = false;
     transitioning = false;
+    feedCooldown = false;
     selectedFoodIndex = 0;
     coins = 0;
     decorations = {};
+    decorationPlacements = [];
+    nextPlacementId = 1;
     wishes = {};
     roomMembers = {};
     updateCoinDisplays();
