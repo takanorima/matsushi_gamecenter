@@ -308,7 +308,7 @@
   <!-- タイトル画面 -->
   <section id="titleScreen" class="screen">
     <h1>ASMRゲーム</h1>
-    <p>テーブルのおさらから ゆびで きゅうりを つまんで<br>おくちに はこんであげよう♪</p>
+    <p>テーブルのおさらから ゆびで たべものを つまんで<br>おくちに はこんであげよう♪</p>
     <div class="gal-figure gal-preview">
       <img class="gal-img" src="assets/art/gal_closed.jpg" alt="ギャルキャラクター">
     </div>
@@ -356,8 +356,8 @@
 
   /* ------------------------------------------------------------
      効果音
-     咀嚼音は assets/sfx/chew.wav を用意すればそれを再生する。
-     まだファイルが無い場合はWebAudioで作った音で代用する。
+     食べものごとに専用の咀嚼音ファイル(assets/sfx/chew_*.wav)を
+     再生する。読み込めない場合はWebAudioで作った音で代用する。
   ------------------------------------------------------------ */
   var audioCtx = null;
   function ensureAudio(){
@@ -393,16 +393,23 @@
     notes.forEach(function(f,i){ tone(f,f,0.22,i*0.12,0.28,"triangle"); });
   }
 
-  var CHEW_SRC = "assets/sfx/chew.wav";
-  var chewAudio = new Audio(CHEW_SRC);
-  chewAudio.preload = "auto";
-  var chewAudioReady = false;
-  chewAudio.addEventListener("canplaythrough", function(){ chewAudioReady = true; }, {once:true});
-  function playChew(){
+  var chewSoundPool = {};
+  function getChewSound(src){
+    if(!chewSoundPool[src]){
+      var audio = new Audio(src);
+      audio.preload = "auto";
+      var ready = false;
+      audio.addEventListener("canplaythrough", function(){ ready = true; }, {once:true});
+      chewSoundPool[src] = { audio: audio, isReady: function(){ return ready; } };
+    }
+    return chewSoundPool[src];
+  }
+  function playChew(src){
     ensureAudio();
-    if(chewAudioReady){
+    var sound = getChewSound(src);
+    if(sound.isReady()){
       try{
-        var inst = chewAudio.cloneNode(true);
+        var inst = sound.audio.cloneNode(true);
         var p = inst.play();
         if(p && p.catch) p.catch(synthChew);
         return;
@@ -440,8 +447,13 @@
     {stage:5, goal:50, plates:5}
   ];
 
-  /* 咀嚼音サンプル(きゅうり)にあわせて、いまは仮できゅうりのみにしている */
-  var FOODS_MAIN = ["🥒"];
+  /* 食べものごとに、対応する咀嚼音ファイルを紐づけている */
+  var FOODS_MAIN = [
+    { emoji:"🥔", sound:"assets/sfx/chew_potechi.wav" },
+    { emoji:"🍫", sound:"assets/sfx/chew_chocolate.wav" },
+    { emoji:"🍬", sound:"assets/sfx/chew_candy.wav" },
+    { emoji:"🍜", sound:"assets/sfx/chew_ramen.wav" }
+  ];
 
   var currentStageIndex = 0;
   var stageToken = 0;
@@ -502,13 +514,15 @@
     spawnedInStage++;
     var rect = plateEl.getBoundingClientRect();
     var size = 52;
+    var food = FOODS_MAIN[Math.floor(Math.random() * FOODS_MAIN.length)];
     var el = document.createElement("div");
     el.className = "food";
-    el.textContent = FOODS_MAIN[Math.floor(Math.random() * FOODS_MAIN.length)];
+    el.textContent = food.emoji;
     el.style.left = (rect.left + rect.width/2 - size/2) + "px";
     el.style.top = (rect.top + rect.height/2 - size/2) + "px";
     el._plateEl = plateEl;
     el._token = token;
+    el._food = food;
     foodLayer.appendChild(el);
     playPop();
     attachDrag(el);
@@ -565,7 +579,7 @@
     var token = el._token;
     var plateEl = el._plateEl;
     el.classList.add("eaten");
-    playChew();
+    playChew(el._food.sound);
     galFigure.classList.add("chewing");
     pendingTimers.push(setTimeout(function(){
       galFigure.classList.remove("chewing");
