@@ -215,6 +215,9 @@
     width: 100%;
     height: 11rem;
     border-radius: 20px;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
     background:
       radial-gradient(circle at 10% 80%, var(--grass-deep) 5%, transparent 6%),
       radial-gradient(circle at 24% 90%, var(--grass-deep) 4%, transparent 5%),
@@ -279,7 +282,6 @@
   }
   .animal-walk.following {
     animation: none;
-    transition: transform .25s ease-out;
   }
   @keyframes stageWalk {
     0%   { transform: translateX(-6rem) scaleX(-1); }
@@ -1157,7 +1159,13 @@
   var animalStageEl = document.getElementById("animalStage");
   var animalWalkEl = document.getElementById("animalWalk");
   var foodCursorEl = document.getElementById("foodCursor");
-  var stageFollowOffset = 0;
+  var STAGE_WALK_SPEED = 130;
+  var stageCurrentOffset = 0;
+  var stageTargetOffset = 0;
+  var stageFacing = 1;
+  var stageFollowActive = false;
+  var stageFollowRAF = null;
+  var stageLastFrameTime = null;
   var progressWrap = document.getElementById("progressWrap");
   var progressLabel = document.getElementById("progressLabel");
   var progressFill = document.getElementById("progressFill");
@@ -1981,6 +1989,25 @@
     }
   });
 
+  function stepStageFollow(now) {
+    if (!stageFollowActive) { stageFollowRAF = null; return; }
+    if (stageLastFrameTime === null) stageLastFrameTime = now;
+    var dt = (now - stageLastFrameTime) / 1000;
+    stageLastFrameTime = now;
+
+    var diff = stageTargetOffset - stageCurrentOffset;
+    if (Math.abs(diff) > 0.5) {
+      stageFacing = diff > 0 ? 1 : -1;
+      var maxStep = STAGE_WALK_SPEED * dt;
+      stageCurrentOffset += Math.abs(diff) <= maxStep ? diff : Math.sign(diff) * maxStep;
+    } else {
+      stageCurrentOffset = stageTargetOffset;
+    }
+    animalWalkEl.style.transform = "translateX(" + stageCurrentOffset + "px) scaleX(" + stageFacing + ")";
+
+    stageFollowRAF = requestAnimationFrame(stepStageFollow);
+  }
+
   animalStageEl.addEventListener("mousemove", function (e) {
     if (!canFeedNow()) { foodCursorEl.hidden = true; return; }
     foodCursorEl.hidden = false;
@@ -1992,16 +2019,23 @@
     var center = stageRect.width / 2;
     var margin = 46;
     var maxOffset = Math.max(0, center - margin);
-    var targetOffset = Math.max(-maxOffset, Math.min(maxOffset, e.clientX - stageRect.left - center));
-    var facing = targetOffset >= stageFollowOffset ? 1 : -1;
-    stageFollowOffset = targetOffset;
-    animalWalkEl.classList.add("following");
-    animalWalkEl.style.transform = "translateX(" + targetOffset + "px) scaleX(" + facing + ")";
+    stageTargetOffset = Math.max(-maxOffset, Math.min(maxOffset, e.clientX - stageRect.left - center));
+
+    if (!stageFollowActive) {
+      stageFollowActive = true;
+      animalWalkEl.classList.add("following");
+      stageLastFrameTime = null;
+      stageFollowRAF = requestAnimationFrame(stepStageFollow);
+    }
   });
   animalStageEl.addEventListener("mouseleave", function () {
     foodCursorEl.hidden = true;
+    stageFollowActive = false;
+    if (stageFollowRAF) { cancelAnimationFrame(stageFollowRAF); stageFollowRAF = null; }
     animalWalkEl.classList.remove("following");
     animalWalkEl.style.transform = "";
+    stageCurrentOffset = 0;
+    stageTargetOffset = 0;
   });
   animalEl.addEventListener("click", function (e) {
     e.stopPropagation();
