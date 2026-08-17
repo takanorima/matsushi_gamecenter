@@ -209,17 +209,68 @@
   }
 
   .animal-stage {
+    position: relative;
+    overflow: hidden;
     margin: .5rem auto 1.1rem;
     width: 11rem;
     height: 11rem;
     border-radius: 50%;
-    background: linear-gradient(var(--sky), var(--sky) 35%, var(--grass) 35%, var(--grass-deep));
+    background:
+      radial-gradient(circle at 27% 78%, var(--grass-deep) 7%, transparent 8%),
+      radial-gradient(circle at 50% 90%, var(--grass-deep) 6%, transparent 7%),
+      radial-gradient(circle at 72% 76%, var(--grass-deep) 7%, transparent 8%),
+      linear-gradient(var(--sky), var(--sky) 35%, var(--grass) 35%, var(--grass-deep));
     display: flex;
     align-items: center;
     justify-content: center;
   }
+  .animal-stage::before {
+    content: "";
+    position: absolute;
+    left: -10%;
+    right: -10%;
+    top: 35%;
+    height: .85rem;
+    transform: translateY(-62%);
+    background:
+      linear-gradient(135deg, var(--grass-deep) 25%, transparent 25%) 0 0,
+      linear-gradient(225deg, var(--grass-deep) 25%, transparent 25%) 0 0;
+    background-size: .42rem .42rem;
+    background-repeat: repeat-x;
+    pointer-events: none;
+  }
+  .animal-stage::after {
+    content: "☀️";
+    position: absolute;
+    top: 1.4rem;
+    right: 1.7rem;
+    font-size: 1rem;
+    line-height: 1;
+    pointer-events: none;
+  }
+  .room-scene::after {
+    content: "☀️";
+    position: absolute;
+    top: .5rem;
+    right: .6rem;
+    font-size: 1.1rem;
+    line-height: 1;
+    pointer-events: none;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .animal-stage::after,
+    :root:not([data-theme="light"]) .room-scene::after {
+      content: "🌙";
+    }
+  }
+  :root[data-theme="dark"] .animal-stage::after,
+  :root[data-theme="dark"] .room-scene::after {
+    content: "🌙";
+  }
   .animal {
     --grow-scale: .55;
+    position: relative;
+    z-index: 1;
     font-size: 6rem;
     line-height: 1;
     display: inline-block;
@@ -540,7 +591,29 @@
     border-radius: 14px;
     padding: .5rem .75rem;
     background:
+      radial-gradient(circle at 8% 85%, var(--grass-deep) 4%, transparent 5%),
+      radial-gradient(circle at 22% 92%, var(--grass-deep) 3%, transparent 4%),
+      radial-gradient(circle at 38% 84%, var(--grass-deep) 4%, transparent 5%),
+      radial-gradient(circle at 55% 93%, var(--grass-deep) 3%, transparent 4%),
+      radial-gradient(circle at 70% 85%, var(--grass-deep) 4%, transparent 5%),
+      radial-gradient(circle at 85% 92%, var(--grass-deep) 3%, transparent 4%),
+      radial-gradient(circle at 96% 84%, var(--grass-deep) 4%, transparent 5%),
       linear-gradient(var(--sky), var(--sky) 62%, var(--grass) 62%, var(--grass-deep));
+  }
+  .room-scene::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 62%;
+    height: .85rem;
+    transform: translateY(-62%);
+    background:
+      linear-gradient(135deg, var(--grass-deep) 25%, transparent 25%) 0 0,
+      linear-gradient(225deg, var(--grass-deep) 25%, transparent 25%) 0 0;
+    background-size: .42rem .42rem;
+    background-repeat: repeat-x;
+    pointer-events: none;
   }
   .room-cloud {
     position: absolute;
