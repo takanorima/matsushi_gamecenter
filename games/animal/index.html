@@ -111,33 +111,52 @@
 
   .stat-row {
     display: flex;
-    gap: .5rem;
+    gap: .35rem;
     align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     margin: 0 0 1rem;
+    padding-bottom: .15rem;
   }
   .stat-pill {
+    flex: none;
+    white-space: nowrap;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 999px;
-    padding: .35rem .8rem;
-    font-size: .85rem;
+    padding: .3rem .6rem;
+    font-size: .78rem;
     font-weight: 700;
     color: var(--ink-soft);
   }
   .stat-pill strong {
     color: var(--ink);
-    font-size: 1rem;
+    font-size: .95rem;
+  }
+  .hud-corner {
+    position: fixed;
+    left: .75rem;
+    bottom: .75rem;
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+    z-index: 15;
+  }
+  .hud-corner .stat-pill {
+    box-shadow: 0 3px 8px rgba(0, 0, 0, .12);
   }
   .zukan-btn {
+    flex: none;
+    white-space: nowrap;
     background: var(--sub);
     border: 1px solid var(--border-strong);
     border-radius: 999px;
-    padding: .35rem .9rem;
+    padding: .3rem .65rem;
     font: inherit;
     font-weight: 700;
-    font-size: .85rem;
+    font-size: .78rem;
     color: var(--ink);
     cursor: pointer;
     touch-action: manipulation;
@@ -535,17 +554,59 @@
     user-select: none;
     z-index: 4;
     filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .18));
+    transform: scale(var(--deco-scale, 1));
     animation: decoSway 4s ease-in-out infinite;
   }
   .room-deco-placed.dragging {
     cursor: grabbing;
     animation: none;
-    transform: scale(1.2);
+    transform: scale(calc(var(--deco-scale, 1) * 1.15));
     z-index: 6;
   }
+  .room-deco-placed.selected {
+    outline: 2px dashed var(--accent);
+    outline-offset: 4px;
+    border-radius: 50%;
+  }
   @keyframes decoSway {
-    0%, 100% { transform: rotate(-3deg); }
-    50%      { transform: rotate(3deg); }
+    0%, 100% { transform: scale(var(--deco-scale, 1)) rotate(-3deg); }
+    50%      { transform: scale(var(--deco-scale, 1)) rotate(3deg); }
+  }
+
+  .deco-toolbar {
+    position: absolute;
+    top: .3rem;
+    right: .3rem;
+    display: flex;
+    gap: .25rem;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    padding: .2rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .25);
+    z-index: 7;
+  }
+  .deco-toolbar button {
+    width: 1.7rem;
+    height: 1.7rem;
+    border-radius: 999px;
+    border: none;
+    background: var(--sub);
+    color: var(--ink);
+    font-size: 1rem;
+    font-weight: 800;
+    font-family: var(--font-body);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    touch-action: manipulation;
+  }
+  .deco-toolbar button.close-btn {
+    background: var(--accent);
+    color: #fff;
+    font-size: .8rem;
   }
 
   .room-grid {
@@ -718,11 +779,14 @@
   </header>
 
   <div class="stat-row">
-    <span class="stat-pill">Lv. <strong id="levelValue">1</strong></span>
     <span class="stat-pill">📖 <strong id="collectedCount">0</strong> / <strong id="statTotal">0</strong></span>
+    <button type="button" class="zukan-btn" id="zukanBtn">📖 図鑑</button>
+    <button type="button" class="zukan-btn" id="roomBtn">🏠 おへや</button>
+  </div>
+
+  <div class="hud-corner">
+    <span class="stat-pill">Lv. <strong id="levelValue">1</strong></span>
     <span class="stat-pill">🪙 <strong id="coinValue">0</strong></span>
-    <button type="button" class="zukan-btn" id="zukanBtn">図鑑をみる</button>
-    <button type="button" class="zukan-btn" id="roomBtn">🏠 おへやをみる</button>
   </div>
 
   <main class="card" id="game">
@@ -787,6 +851,7 @@
     <div class="room-scene" id="roomScene">
       <div class="room-clouds" id="roomClouds" aria-hidden="true"></div>
       <div class="room-grid" id="roomGrid"></div>
+      <div id="decoToolbarSlot"></div>
     </div>
     <div class="room-shop">
       <p class="room-shop-label">🪙 <strong id="shopCoinValue">0</strong> まいで、おへやに かざりを おこう</p>
@@ -967,6 +1032,7 @@
   var roomOverlay = document.getElementById("roomOverlay");
   var roomGrid = document.getElementById("roomGrid");
   var roomClouds = document.getElementById("roomClouds");
+  var decoToolbarSlot = document.getElementById("decoToolbarSlot");
   var roomCount = document.getElementById("roomCount");
   var roomClose = document.getElementById("roomClose");
   var roomPickBtn = document.getElementById("roomPickBtn");
@@ -1006,6 +1072,9 @@
   var decorations = {};
   var decorationPlacements = [];
   var nextPlacementId = 1;
+  var selectedDecoPid = null;
+  var DECO_MIN_SCALE = .5;
+  var DECO_MAX_SCALE = 2.5;
   var wishes = {};
   var roomMembers = {};
   var transitioning = false;
@@ -1097,6 +1166,57 @@
         });
         foodRow.appendChild(btn);
       })(foods[i], i);
+    }
+  }
+
+  var audioCtx = null;
+  function getAudioCtx() {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    if (!audioCtx) audioCtx = new AC();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    return audioCtx;
+  }
+
+  function playChompSound() {
+    var ctx = getAudioCtx();
+    if (!ctx) return;
+    try {
+      var now = ctx.currentTime;
+
+      var osc = ctx.createOscillator();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(300, now);
+      osc.frequency.exponentialRampToValueAtTime(120, now + 0.08);
+      var oscGain = ctx.createGain();
+      oscGain.gain.setValueAtTime(0.0001, now);
+      oscGain.gain.exponentialRampToValueAtTime(0.22, now + 0.01);
+      oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
+      osc.connect(oscGain);
+      oscGain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.12);
+
+      var bufferSize = Math.floor(ctx.sampleRate * 0.06);
+      var buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      var data = buffer.getChannelData(0);
+      for (var i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+      }
+      var noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+      var noiseFilter = ctx.createBiquadFilter();
+      noiseFilter.type = "bandpass";
+      noiseFilter.frequency.value = 1200;
+      var noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.18, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+      noise.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+      noise.start(now);
+    } catch (e) {
+      // ignore audio playback errors (e.g. autoplay restrictions)
     }
   }
 
@@ -1193,6 +1313,7 @@
     feedsInEncounter++;
     spawnFlyingFood(foodEmoji);
     bounceAnimal();
+    playChompSound();
 
     if (feedsInEncounter >= feedsNeededForLevel(level)) {
       transitioning = true;
@@ -1329,7 +1450,7 @@
 
     var defaultX = 10 + (decorationPlacements.length * 42) % 260;
     var defaultY = 10 + (decorationPlacements.length % 3) * 24;
-    decorationPlacements.push({ pid: nextPlacementId++, deco: id, x: defaultX, y: defaultY });
+    decorationPlacements.push({ pid: nextPlacementId++, deco: id, x: defaultX, y: defaultY, scale: 1 });
 
     updateCoinDisplays();
     renderRoom();
@@ -1391,6 +1512,8 @@
       roomGrid.innerHTML = collectedCount === 0
         ? '<p class="room-empty">まだ だれも いないよ。<br>えさをあげて なかまを ふやそう!</p>'
         : '<p class="room-empty">図鑑から すきな どうぶつを えらんで、<br>おへやに よんであげよう!</p>';
+      selectedDecoPid = null;
+      decoToolbarSlot.innerHTML = "";
       return;
     }
 
@@ -1433,6 +1556,7 @@
       html += '<div class="room-lane">' + lanesHtml[l] + '</div>';
     }
 
+    var selectedPlacement = null;
     for (var p = 0; p < decorationPlacements.length; p++) {
       var placement = decorationPlacements[p];
       var decoItem = null;
@@ -1440,10 +1564,23 @@
         if (DECORATIONS[dd].id === placement.deco) { decoItem = DECORATIONS[dd]; break; }
       }
       if (!decoItem) continue;
+      if (placement.pid === selectedDecoPid) selectedPlacement = placement;
       var swayDelay = (-1 * (placement.pid * 7 % 40) / 10).toFixed(2);
-      html += '<span class="room-deco-placed" data-pid="' + placement.pid + '" style="left:' +
-        placement.x + 'px; top:' + placement.y + 'px; animation-delay:' + swayDelay + 's" title="' +
-        decoItem.n + '">' + decoItem.e + '</span>';
+      var isSelected = placement.pid === selectedDecoPid;
+      html += '<span class="room-deco-placed' + (isSelected ? " selected" : "") + '" data-pid="' + placement.pid +
+        '" style="left:' + placement.x + 'px; top:' + placement.y + 'px; --deco-scale:' + (placement.scale || 1) +
+        '; animation-delay:' + swayDelay + 's" title="' + decoItem.n + '">' + decoItem.e + '</span>';
+    }
+
+    if (selectedPlacement) {
+      decoToolbarSlot.innerHTML = '<div class="deco-toolbar">' +
+        '<button type="button" data-action="smaller" data-pid="' + selectedPlacement.pid + '" aria-label="ちいさく">－</button>' +
+        '<button type="button" data-action="bigger" data-pid="' + selectedPlacement.pid + '" aria-label="おおきく">＋</button>' +
+        '<button type="button" class="close-btn" data-action="close" aria-label="とじる">✕</button>' +
+        '</div>';
+    } else {
+      selectedDecoPid = null;
+      decoToolbarSlot.innerHTML = "";
     }
 
     roomGrid.innerHTML = html;
@@ -1466,6 +1603,29 @@
     for (var de = 0; de < decoEls.length; de++) {
       makeDecoDraggable(decoEls[de]);
     }
+
+    var toolbarBtns = decoToolbarSlot.querySelectorAll(".deco-toolbar button");
+    for (var tb = 0; tb < toolbarBtns.length; tb++) {
+      toolbarBtns[tb].addEventListener("click", function (e) {
+        e.stopPropagation();
+        var action = this.getAttribute("data-action");
+        if (action === "close") {
+          selectedDecoPid = null;
+          renderRoom();
+          return;
+        }
+        var pid = parseInt(this.getAttribute("data-pid"), 10);
+        var pl = null;
+        for (var i = 0; i < decorationPlacements.length; i++) {
+          if (decorationPlacements[i].pid === pid) { pl = decorationPlacements[i]; break; }
+        }
+        if (!pl) return;
+        var cur = pl.scale || 1;
+        cur = action === "bigger" ? cur + 0.2 : cur - 0.2;
+        pl.scale = Math.round(Math.min(DECO_MAX_SCALE, Math.max(DECO_MIN_SCALE, cur)) * 100) / 100;
+        renderRoom();
+      });
+    }
   }
 
   function makeDecoDraggable(el) {
@@ -1476,10 +1636,19 @@
     }
     if (!placement) return;
 
+    var DRAG_THRESHOLD = 6;
     var offsetX = 0;
     var offsetY = 0;
+    var startX = 0;
+    var startY = 0;
+    var moved = false;
 
     function onMove(ev) {
+      var dx = ev.clientX - startX;
+      var dy = ev.clientY - startY;
+      if (!moved && Math.sqrt(dx * dx + dy * dy) < DRAG_THRESHOLD) return;
+      moved = true;
+
       var gridRect = roomGrid.getBoundingClientRect();
       var maxX = Math.max(0, roomGrid.offsetWidth - el.offsetWidth);
       var maxY = Math.max(0, roomGrid.offsetHeight - el.offsetHeight);
@@ -1496,13 +1665,21 @@
       el.releasePointerCapture(ev.pointerId);
       el.removeEventListener("pointermove", onMove);
       el.removeEventListener("pointerup", onUp);
+      if (!moved) {
+        selectedDecoPid = selectedDecoPid === pid ? null : pid;
+        renderRoom();
+      }
     }
 
     el.addEventListener("pointerdown", function (e) {
       e.preventDefault();
+      e.stopPropagation();
       var elRect = el.getBoundingClientRect();
       offsetX = e.clientX - elRect.left;
       offsetY = e.clientY - elRect.top;
+      startX = e.clientX;
+      startY = e.clientY;
+      moved = false;
       el.classList.add("dragging");
       el.setPointerCapture(e.pointerId);
       el.addEventListener("pointermove", onMove);
@@ -1523,6 +1700,7 @@
     decorations = {};
     decorationPlacements = [];
     nextPlacementId = 1;
+    selectedDecoPid = null;
     wishes = {};
     roomMembers = {};
     updateCoinDisplays();
@@ -1551,6 +1729,12 @@
     roomOverlay.hidden = true;
     renderZukan();
     zukanOverlay.hidden = false;
+  });
+  roomOverlay.addEventListener("click", function (e) {
+    if (!e.target.closest(".room-deco-placed") && !e.target.closest(".deco-toolbar") && selectedDecoPid !== null) {
+      selectedDecoPid = null;
+      renderRoom();
+    }
   });
   restartBtn.addEventListener("click", reset);
   window.addEventListener("keydown", function (e) {
