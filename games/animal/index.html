@@ -277,11 +277,23 @@
     justify-content: center;
     animation: stageWalk 5.5s ease-in-out infinite alternate;
   }
+  .animal-walk.following {
+    animation: none;
+    transition: transform .25s ease-out;
+  }
   @keyframes stageWalk {
     0%   { transform: translateX(-6rem) scaleX(-1); }
     45%  { transform: translateX(-6rem) scaleX(-1); }
     55%  { transform: translateX(6rem) scaleX(1); }
     100% { transform: translateX(6rem) scaleX(1); }
+  }
+  .animal-bob {
+    display: inline-flex;
+    animation: walkBob .5s ease-in-out infinite;
+  }
+  @keyframes walkBob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-.22rem); }
   }
   .animal {
     --grow-scale: .55;
@@ -916,7 +928,9 @@
     <p class="stage-name" id="stageName"></p>
     <div class="animal-stage" id="animalStage">
       <div class="animal-walk" id="animalWalk">
-        <span class="animal" id="animalEmoji"></span>
+        <div class="animal-bob">
+          <span class="animal" id="animalEmoji"></span>
+        </div>
       </div>
       <span class="food-cursor" id="foodCursor" hidden></span>
     </div>
@@ -1126,7 +1140,7 @@
   var BASE_FEEDS_PER_ANIMAL = 3;
   var MAX_FEEDS_PER_ANIMAL = 9;
   var FEEDS_STEP_EVERY_LEVELS = 15;
-  var NEW_ANIMAL_BIAS = 0.7;
+  var NEW_ANIMAL_BIAS = 2 / 3;
 
   function feedsNeededForLevel(lv) {
     var extra = Math.floor((lv - 1) / FEEDS_STEP_EVERY_LEVELS);
@@ -1141,7 +1155,9 @@
   var stageNameEl = document.getElementById("stageName");
   var animalEl = document.getElementById("animalEmoji");
   var animalStageEl = document.getElementById("animalStage");
+  var animalWalkEl = document.getElementById("animalWalk");
   var foodCursorEl = document.getElementById("foodCursor");
+  var stageFollowOffset = 0;
   var progressWrap = document.getElementById("progressWrap");
   var progressLabel = document.getElementById("progressLabel");
   var progressFill = document.getElementById("progressFill");
@@ -1291,13 +1307,14 @@
 
   function pickAnimalIndex() {
     var uncollected = [];
+    var collectedList = [];
     for (var i = 0; i < ANIMALS.length; i++) {
-      if (!collected[i]) uncollected.push(i);
+      (collected[i] ? collectedList : uncollected).push(i);
     }
-    if (uncollected.length > 0 && Math.random() < NEW_ANIMAL_BIAS) {
+    if (collectedList.length === 0 || (uncollected.length > 0 && Math.random() < NEW_ANIMAL_BIAS)) {
       return uncollected[Math.floor(Math.random() * uncollected.length)];
     }
-    return Math.floor(Math.random() * ANIMALS.length);
+    return collectedList[Math.floor(Math.random() * collectedList.length)];
   }
 
   function unlockedFoods() {
@@ -1970,11 +1987,24 @@
     foodCursorEl.textContent = getSelectedFoodEmoji();
     foodCursorEl.style.left = e.clientX + "px";
     foodCursorEl.style.top = e.clientY + "px";
+
+    var stageRect = animalStageEl.getBoundingClientRect();
+    var center = stageRect.width / 2;
+    var margin = 46;
+    var maxOffset = Math.max(0, center - margin);
+    var targetOffset = Math.max(-maxOffset, Math.min(maxOffset, e.clientX - stageRect.left - center));
+    var facing = targetOffset >= stageFollowOffset ? 1 : -1;
+    stageFollowOffset = targetOffset;
+    animalWalkEl.classList.add("following");
+    animalWalkEl.style.transform = "translateX(" + targetOffset + "px) scaleX(" + facing + ")";
   });
   animalStageEl.addEventListener("mouseleave", function () {
     foodCursorEl.hidden = true;
+    animalWalkEl.classList.remove("following");
+    animalWalkEl.style.transform = "";
   });
-  animalStageEl.addEventListener("click", function () {
+  animalEl.addEventListener("click", function (e) {
+    e.stopPropagation();
     if (!canFeedNow()) return;
     feed(getSelectedFoodEmoji());
   });
