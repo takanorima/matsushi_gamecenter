@@ -476,12 +476,12 @@
 
   .room-scene {
     position: relative;
-    flex: 1;
-    min-height: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
+    height: 6.5rem;
+    flex: none;
+    overflow-x: auto;
+    overflow-y: hidden;
     border-radius: 14px;
-    padding: 1rem .75rem .5rem;
+    padding: .5rem .75rem;
     background:
       linear-gradient(var(--sky), var(--sky) 62%, var(--grass) 62%, var(--grass-deep));
   }
@@ -502,7 +502,14 @@
     flex-wrap: wrap;
     justify-content: center;
     gap: .3rem;
-    margin-bottom: .5rem;
+    margin-bottom: .6rem;
+    padding: .4rem;
+    border-radius: 10px;
+    background: var(--paper);
+    border: 1px solid var(--border);
+  }
+  .room-deco-row:empty {
+    display: none;
   }
   .room-deco-item {
     width: 2.6rem;
@@ -520,22 +527,24 @@
 
   .room-grid {
     position: relative;
+    min-width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
     gap: .1rem;
   }
   .room-lane {
     position: relative;
-    height: 3.3rem;
+    flex: 1 1 0;
   }
   .room-walker {
     position: absolute;
-    top: 0;
+    top: 50%;
     display: inline-flex;
     align-items: center;
     gap: .3rem;
     white-space: nowrap;
-    animation-name: walkLane;
+    animation-name: walkSway;
     animation-timing-function: ease-in-out;
     animation-iteration-count: infinite;
     animation-direction: alternate;
@@ -550,9 +559,9 @@
     color: var(--ink-soft);
     text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
   }
-  @keyframes walkLane {
-    0%   { left: 1%; }
-    100% { left: 72%; }
+  @keyframes walkSway {
+    0%   { transform: translateY(-50%) translateX(-.9rem); }
+    100% { transform: translateY(-50%) translateX(.9rem); }
   }
   .room-wish {
     position: absolute;
@@ -749,9 +758,9 @@
       <span id="roomCount"></span>
       <button type="button" class="zukan-close" id="roomClose" aria-label="とじる">✕</button>
     </div>
+    <div class="room-deco-row" id="roomDecoShelf"></div>
     <div class="room-scene" id="roomScene">
       <div class="room-clouds" id="roomClouds" aria-hidden="true"></div>
-      <div class="room-deco-row" id="roomDecoShelf"></div>
       <div class="room-grid" id="roomGrid"></div>
     </div>
     <div class="room-shop">
@@ -1282,10 +1291,14 @@
     }
   }
 
+  var ROOM_LANE_COUNT = 1;
+  var ROOM_COLUMN_WIDTH_REM = 4.5;
+
   function renderRoom() {
     roomCount.textContent = collectedCount + " / " + ANIMALS.length + " なかま";
     if (collectedCount === 0) {
       roomDecoShelf.innerHTML = "";
+      roomGrid.style.width = "";
       roomGrid.innerHTML = '<p class="room-empty">まだ だれも いないよ。<br>えさをあげて なかまを ふやそう!</p>';
       return;
     }
@@ -1301,12 +1314,20 @@
     }
     roomDecoShelf.innerHTML = decoHtml;
 
-    var html = "";
+    var lanesHtml = [];
+    for (var lc = 0; lc < ROOM_LANE_COUNT; lc++) lanesHtml.push("");
+
+    var order = 0;
     for (var i = 0; i < ANIMALS.length; i++) {
       if (!collected[i]) continue;
+      var lane = order % ROOM_LANE_COUNT;
+      var column = Math.floor(order / ROOM_LANE_COUNT);
+      order++;
+
       var duration = (5 + (i % 8) * 0.8).toFixed(2);
       var delay = (-1 * ((i * 37) % 50) / 10).toFixed(2);
-      var style = "animation-duration:" + duration + "s; animation-delay:" + delay + "s";
+      var leftRem = (column * ROOM_COLUMN_WIDTH_REM + 0.4).toFixed(2);
+      var style = "left:" + leftRem + "rem; animation-duration:" + duration + "s; animation-delay:" + delay + "s";
 
       var wishHtml = "";
       if (wishes[i]) {
@@ -1321,13 +1342,21 @@
         }
       }
 
-      html += '<div class="room-lane">' +
-        '<div class="room-walker" style="' + style + '">' + wishHtml +
+      lanesHtml[lane] += '<div class="room-walker" style="' + style + '">' + wishHtml +
         '<span class="room-emoji">' + ANIMALS[i].e + '</span>' +
         '<span class="room-name">' + ANIMALS[i].n + '</span>' +
-        '</div></div>';
+        '</div>';
+    }
+
+    var html = "";
+    for (var l = 0; l < ROOM_LANE_COUNT; l++) {
+      html += '<div class="room-lane">' + lanesHtml[l] + '</div>';
     }
     roomGrid.innerHTML = html;
+
+    var columnsUsed = Math.ceil(collectedCount / ROOM_LANE_COUNT);
+    var gridWidth = columnsUsed * ROOM_COLUMN_WIDTH_REM + 1;
+    roomGrid.style.width = gridWidth + "rem";
 
     var wishButtons = roomGrid.querySelectorAll(".room-wish");
     for (var b = 0; b < wishButtons.length; b++) {
