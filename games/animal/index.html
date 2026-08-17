@@ -211,24 +211,28 @@
   .animal-stage {
     position: relative;
     overflow: hidden;
-    margin: .5rem auto 1.1rem;
-    width: 11rem;
+    margin: .5rem 0 1.1rem;
+    width: 100%;
     height: 11rem;
-    border-radius: 50%;
+    border-radius: 20px;
     background:
-      radial-gradient(circle at 27% 78%, var(--grass-deep) 7%, transparent 8%),
-      radial-gradient(circle at 50% 90%, var(--grass-deep) 6%, transparent 7%),
-      radial-gradient(circle at 72% 76%, var(--grass-deep) 7%, transparent 8%),
+      radial-gradient(circle at 10% 80%, var(--grass-deep) 5%, transparent 6%),
+      radial-gradient(circle at 24% 90%, var(--grass-deep) 4%, transparent 5%),
+      radial-gradient(circle at 40% 78%, var(--grass-deep) 5%, transparent 6%),
+      radial-gradient(circle at 56% 90%, var(--grass-deep) 4%, transparent 5%),
+      radial-gradient(circle at 72% 78%, var(--grass-deep) 5%, transparent 6%),
+      radial-gradient(circle at 88% 90%, var(--grass-deep) 4%, transparent 5%),
       linear-gradient(var(--sky), var(--sky) 35%, var(--grass) 35%, var(--grass-deep));
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: none;
   }
   .animal-stage::before {
     content: "";
     position: absolute;
-    left: -10%;
-    right: -10%;
+    left: 0;
+    right: 0;
     top: 35%;
     height: .85rem;
     transform: translateY(-62%);
@@ -242,9 +246,9 @@
   .animal-stage::after {
     content: "☀️";
     position: absolute;
-    top: 1.4rem;
-    right: 1.7rem;
-    font-size: 1rem;
+    top: .5rem;
+    right: .6rem;
+    font-size: 1.1rem;
     line-height: 1;
     pointer-events: none;
   }
@@ -271,13 +275,13 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    animation: stageWalk 3.6s ease-in-out infinite alternate;
+    animation: stageWalk 5.5s ease-in-out infinite alternate;
   }
   @keyframes stageWalk {
-    0%   { transform: translateX(-1.3rem) scaleX(-1); }
-    45%  { transform: translateX(-1.3rem) scaleX(-1); }
-    55%  { transform: translateX(1.3rem) scaleX(1); }
-    100% { transform: translateX(1.3rem) scaleX(1); }
+    0%   { transform: translateX(-6rem) scaleX(-1); }
+    45%  { transform: translateX(-6rem) scaleX(-1); }
+    55%  { transform: translateX(6rem) scaleX(1); }
+    100% { transform: translateX(6rem) scaleX(1); }
   }
   .animal {
     --grow-scale: .55;
@@ -300,6 +304,17 @@
     100% { transform: scale(var(--grow-scale)) rotate(0); }
   }
 
+  .food-cursor {
+    position: fixed;
+    left: 0;
+    top: 0;
+    transform: translate(-50%, -50%);
+    font-size: 1.8rem;
+    line-height: 1;
+    pointer-events: none;
+    z-index: 20;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .25));
+  }
   .flying-food {
     position: fixed;
     left: 0;
@@ -899,10 +914,11 @@
   <main class="card" id="game">
     <div class="new-badge" id="newBadge" hidden>NEW!</div>
     <p class="stage-name" id="stageName"></p>
-    <div class="animal-stage">
+    <div class="animal-stage" id="animalStage">
       <div class="animal-walk" id="animalWalk">
         <span class="animal" id="animalEmoji"></span>
       </div>
+      <span class="food-cursor" id="foodCursor" hidden></span>
     </div>
 
     <div id="progressWrap">
@@ -1124,6 +1140,8 @@
   var newBadge = document.getElementById("newBadge");
   var stageNameEl = document.getElementById("stageName");
   var animalEl = document.getElementById("animalEmoji");
+  var animalStageEl = document.getElementById("animalStage");
+  var foodCursorEl = document.getElementById("foodCursor");
   var progressWrap = document.getElementById("progressWrap");
   var progressLabel = document.getElementById("progressLabel");
   var progressFill = document.getElementById("progressFill");
@@ -1925,9 +1943,14 @@
     }
   });
   restartBtn.addEventListener("click", reset);
+
+  function canFeedNow() {
+    return !(cleared || zukanOverlay.hidden === false || roomOverlay.hidden === false);
+  }
+
   window.addEventListener("keydown", function (e) {
     if (e.repeat) return;
-    if (cleared || zukanOverlay.hidden === false || roomOverlay.hidden === false) return;
+    if (!canFeedNow()) return;
     if (e.key === "x" || e.key === "X") {
       feedKeyIndicator.classList.remove("pressed");
       void feedKeyIndicator.offsetWidth;
@@ -1939,6 +1962,21 @@
     if (e.key === "x" || e.key === "X") {
       feedKeyIndicator.classList.remove("pressed");
     }
+  });
+
+  animalStageEl.addEventListener("mousemove", function (e) {
+    if (!canFeedNow()) { foodCursorEl.hidden = true; return; }
+    foodCursorEl.hidden = false;
+    foodCursorEl.textContent = getSelectedFoodEmoji();
+    foodCursorEl.style.left = e.clientX + "px";
+    foodCursorEl.style.top = e.clientY + "px";
+  });
+  animalStageEl.addEventListener("mouseleave", function () {
+    foodCursorEl.hidden = true;
+  });
+  animalStageEl.addEventListener("click", function () {
+    if (!canFeedNow()) return;
+    feed(getSelectedFoodEmoji());
   });
 
   document.getElementById("goalTotal").textContent = String(ANIMALS.length);
