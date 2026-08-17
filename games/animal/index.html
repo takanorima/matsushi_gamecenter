@@ -267,6 +267,18 @@
   :root[data-theme="dark"] .room-scene::after {
     content: "🌙";
   }
+  .animal-walk {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    animation: stageWalk 3.6s ease-in-out infinite alternate;
+  }
+  @keyframes stageWalk {
+    0%   { transform: translateX(-1.3rem) scaleX(-1); }
+    45%  { transform: translateX(-1.3rem) scaleX(-1); }
+    55%  { transform: translateX(1.3rem) scaleX(1); }
+    100% { transform: translateX(1.3rem) scaleX(1); }
+  }
   .animal {
     --grow-scale: .55;
     position: relative;
@@ -888,7 +900,9 @@
     <div class="new-badge" id="newBadge" hidden>NEW!</div>
     <p class="stage-name" id="stageName"></p>
     <div class="animal-stage">
-      <span class="animal" id="animalEmoji"></span>
+      <div class="animal-walk" id="animalWalk">
+        <span class="animal" id="animalEmoji"></span>
+      </div>
     </div>
 
     <div id="progressWrap">
