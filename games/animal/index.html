@@ -199,6 +199,14 @@
     font-weight: 700;
     color: var(--ink-soft);
   }
+  ruby {
+    ruby-align: center;
+  }
+  rt {
+    font-size: .55em;
+    font-weight: 500;
+    user-select: none;
+  }
 
   .animal-stage {
     margin: .5rem auto 1.1rem;
@@ -472,7 +480,7 @@
   .zukan-grid {
     overflow-y: auto;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(3.2rem, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(4.4rem, 1fr));
     gap: .4rem;
     padding: .2rem;
   }
@@ -485,13 +493,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
+    font-size: 2.3rem;
     font: inherit;
     padding: 0;
   }
   .zukan-cell.locked {
     color: var(--ink-faint);
-    font-size: 1.2rem;
+    font-size: 1.6rem;
   }
   .zukan-cell.collected {
     background: linear-gradient(180deg, var(--sub), var(--main));
@@ -525,7 +533,7 @@
 
   .room-scene {
     position: relative;
-    height: 6.5rem;
+    height: 8.5rem;
     flex: none;
     overflow-x: auto;
     overflow-y: hidden;
@@ -641,7 +649,7 @@
   }
   .room-walker .room-name {
     font-size: .58rem;
-    line-height: 1.2;
+    line-height: 1.8;
     color: var(--ink-soft);
     background: var(--room-name-bg, rgba(255, 255, 255, .75));
     border-radius: 999px;
@@ -877,113 +885,113 @@
 <script>
 (function () {
   var ANIMALS = [
-    { e: "🐶", n: "子犬" },
-    { e: "🐕", n: "犬" },
+    { e: "🐶", n: "子犬", furi: "子犬[こいぬ]" },
+    { e: "🐕", n: "犬", furi: "犬[いぬ]" },
     { e: "🐩", n: "プードル" },
-    { e: "🐺", n: "狼" },
-    { e: "🦊", n: "狐" },
-    { e: "🐱", n: "子猫" },
-    { e: "🐈", n: "猫" },
-    { e: "🐈‍⬛", n: "黒猫" },
+    { e: "🐺", n: "狼", furi: "狼[おおかみ]" },
+    { e: "🦊", n: "狐", furi: "狐[きつね]" },
+    { e: "🐱", n: "子猫", furi: "子猫[こねこ]" },
+    { e: "🐈", n: "猫", furi: "猫[ねこ]" },
+    { e: "🐈‍⬛", n: "黒猫", furi: "黒猫[くろねこ]" },
     { e: "🦁", n: "ライオン" },
-    { e: "🐯", n: "子虎" },
-    { e: "🐅", n: "虎" },
-    { e: "🐆", n: "豹" },
-    { e: "🐴", n: "子馬" },
-    { e: "🐎", n: "馬" },
+    { e: "🐯", n: "子虎", furi: "子虎[ことら]" },
+    { e: "🐅", n: "虎", furi: "虎[とら]" },
+    { e: "🐆", n: "豹", furi: "豹[ひょう]" },
+    { e: "🐴", n: "子馬", furi: "子馬[こうま]" },
+    { e: "🐎", n: "馬", furi: "馬[うま]" },
     { e: "🦄", n: "ユニコーン" },
     { e: "🦓", n: "シマウマ" },
-    { e: "🦌", n: "鹿" },
-    { e: "🐮", n: "子牛" },
-    { e: "🐄", n: "牛" },
-    { e: "🐂", n: "雄牛" },
-    { e: "🐃", n: "水牛" },
-    { e: "🐷", n: "子豚" },
-    { e: "🐖", n: "豚" },
-    { e: "🐗", n: "猪" },
-    { e: "🐏", n: "雄羊" },
-    { e: "🐑", n: "羊" },
-    { e: "🐐", n: "山羊" },
+    { e: "🦌", n: "鹿", furi: "鹿[しか]" },
+    { e: "🐮", n: "子牛", furi: "子牛[こうし]" },
+    { e: "🐄", n: "牛", furi: "牛[うし]" },
+    { e: "🐂", n: "雄牛", furi: "雄牛[おうし]" },
+    { e: "🐃", n: "水牛", furi: "水牛[すいぎゅう]" },
+    { e: "🐷", n: "子豚", furi: "子豚[こぶた]" },
+    { e: "🐖", n: "豚", furi: "豚[ぶた]" },
+    { e: "🐗", n: "猪", furi: "猪[いのしし]" },
+    { e: "🐏", n: "雄羊", furi: "雄羊[おひつじ]" },
+    { e: "🐑", n: "羊", furi: "羊[ひつじ]" },
+    { e: "🐐", n: "山羊", furi: "山羊[やぎ]" },
     { e: "🦙", n: "ラマ" },
     { e: "🐪", n: "ヒトコブ" },
     { e: "🐫", n: "フタコブ" },
     { e: "🦒", n: "キリン" },
-    { e: "🐘", n: "象" },
+    { e: "🐘", n: "象", furi: "象[ぞう]" },
     { e: "🦣", n: "マンモス" },
-    { e: "🦏", n: "犀" },
-    { e: "🦛", n: "河馬" },
-    { e: "🐭", n: "子鼠" },
-    { e: "🐁", n: "鼠" },
-    { e: "🐀", n: "大鼠" },
+    { e: "🦏", n: "犀", furi: "犀[さい]" },
+    { e: "🦛", n: "河馬", furi: "河馬[かば]" },
+    { e: "🐭", n: "子ネズミ" },
+    { e: "🐁", n: "ネズミ" },
+    { e: "🐀", n: "大ネズミ" },
     { e: "🐹", n: "ハムスター" },
-    { e: "🐰", n: "子兎" },
-    { e: "🐇", n: "兎" },
+    { e: "🐰", n: "子兎", furi: "子兎[こうさぎ]" },
+    { e: "🐇", n: "兎", furi: "兎[うさぎ]" },
     { e: "🐿️", n: "リス" },
     { e: "🦫", n: "ビーバー" },
     { e: "🦔", n: "ハリネズミ" },
     { e: "🦇", n: "コウモリ" },
-    { e: "🐻", n: "熊" },
-    { e: "🐻‍❄️", n: "白熊" },
+    { e: "🐻", n: "熊", furi: "熊[くま]" },
+    { e: "🐻‍❄️", n: "白熊", furi: "白熊[しろくま]" },
     { e: "🐨", n: "コアラ" },
     { e: "🐼", n: "パンダ" },
     { e: "🦥", n: "ナマケモノ" },
     { e: "🦦", n: "カワウソ" },
     { e: "🦨", n: "スカンク" },
     { e: "🦘", n: "カンガルー" },
-    { e: "🦡", n: "穴熊" },
+    { e: "🦡", n: "穴熊", furi: "穴熊[あなぐま]" },
     { e: "🦝", n: "アライグマ" },
     { e: "🦬", n: "バイソン" },
-    { e: "🐵", n: "子猿" },
-    { e: "🐒", n: "猿" },
+    { e: "🐵", n: "子猿", furi: "子猿[こざる]" },
+    { e: "🐒", n: "猿", furi: "猿[さる]" },
     { e: "🦍", n: "ゴリラ" },
     { e: "🦧", n: "オランウータン" },
-    { e: "🐔", n: "鶏" },
-    { e: "🐓", n: "雄鶏" },
-    { e: "🐣", n: "生まれたてヒヨコ" },
+    { e: "🐔", n: "鶏", furi: "鶏[にわとり]" },
+    { e: "🐓", n: "雄鶏", furi: "雄鶏[おんどり]" },
+    { e: "🐣", n: "生まれたてヒヨコ", furi: "生[う]まれたてヒヨコ" },
     { e: "🐤", n: "ヒヨコ" },
     { e: "🐥", n: "コヒヨコ" },
-    { e: "🐦", n: "鳥" },
+    { e: "🐦", n: "鳥", furi: "鳥[とり]" },
     { e: "🐧", n: "ペンギン" },
-    { e: "🕊️", n: "鳩" },
-    { e: "🦅", n: "鷲" },
+    { e: "🕊️", n: "鳩", furi: "鳩[はと]" },
+    { e: "🦅", n: "鷲", furi: "鷲[わし]" },
     { e: "🦆", n: "アヒル" },
-    { e: "🦢", n: "白鳥" },
+    { e: "🦢", n: "白鳥", furi: "白鳥[はくちょう]" },
     { e: "🦉", n: "フクロウ" },
     { e: "🦤", n: "ドードー" },
     { e: "🦩", n: "フラミンゴ" },
-    { e: "🦚", n: "孔雀" },
+    { e: "🦚", n: "孔雀", furi: "孔雀[くじゃく]" },
     { e: "🦜", n: "オウム" },
-    { e: "🦃", n: "七面鳥" },
-    { e: "🐦‍⬛", n: "烏" },
-    { e: "🐸", n: "蛙" },
+    { e: "🦃", n: "七面鳥", furi: "七面鳥[しちめんちょう]" },
+    { e: "🐦‍⬛", n: "烏", furi: "烏[からす]" },
+    { e: "🐸", n: "蛙", furi: "蛙[かえる]" },
     { e: "🐊", n: "ワニ" },
-    { e: "🐢", n: "亀" },
+    { e: "🐢", n: "亀", furi: "亀[かめ]" },
     { e: "🦎", n: "トカゲ" },
-    { e: "🐍", n: "蛇" },
+    { e: "🐍", n: "蛇", furi: "蛇[へび]" },
     { e: "🐲", n: "タツノコ" },
     { e: "🐉", n: "ドラゴン" },
-    { e: "🦕", n: "恐竜" },
+    { e: "🦕", n: "恐竜", furi: "恐竜[きょうりゅう]" },
     { e: "🦖", n: "ティラノ" },
-    { e: "🐳", n: "白鯨" },
-    { e: "🐋", n: "鯨" },
+    { e: "🐳", n: "クジラ" },
+    { e: "🐋", n: "鯨", furi: "鯨[くじら]" },
     { e: "🐬", n: "イルカ" },
     { e: "🦭", n: "アザラシ" },
-    { e: "🐟", n: "魚" },
-    { e: "🐠", n: "熱帯魚" },
-    { e: "🐡", n: "河豚" },
-    { e: "🦈", n: "鮫" },
-    { e: "🐙", n: "蛸" },
-    { e: "🦑", n: "烏賊" },
-    { e: "🦐", n: "海老" },
+    { e: "🐟", n: "魚", furi: "魚[さかな]" },
+    { e: "🐠", n: "熱帯魚", furi: "熱帯魚[ねったいぎょ]" },
+    { e: "🐡", n: "河豚", furi: "河豚[ふぐ]" },
+    { e: "🦈", n: "鮫", furi: "鮫[さめ]" },
+    { e: "🐙", n: "蛸", furi: "蛸[たこ]" },
+    { e: "🦑", n: "烏賊", furi: "烏賊[いか]" },
+    { e: "🦐", n: "海老", furi: "海老[えび]" },
     { e: "🦞", n: "ロブスター" },
-    { e: "🦀", n: "蟹" },
-    { e: "🦪", n: "牡蠣" },
+    { e: "🦀", n: "蟹", furi: "蟹[かに]" },
+    { e: "🦪", n: "牡蠣", furi: "牡蠣[かき]" },
     { e: "🪼", n: "クラゲ" },
-    { e: "🐚", n: "貝殻" },
-    { e: "🦋", n: "蝶" },
-    { e: "🦠", n: "微生物" },
-    { e: "🦮", n: "盲導犬" },
-    { e: "🐕‍🦺", n: "働く犬" },
+    { e: "🐚", n: "貝殻", furi: "貝殻[かいがら]" },
+    { e: "🦋", n: "蝶", furi: "蝶[ちょう]" },
+    { e: "🦠", n: "微生物", furi: "微生物[びせいぶつ]" },
+    { e: "🦮", n: "盲導犬", furi: "盲導犬[もうどうけん]" },
+    { e: "🐕‍🦺", n: "働く犬", furi: "働[はたら]く犬[いぬ]" },
     { e: "👽", n: "うちゅうじん" },
     { e: "👾", n: "モンスター" },
     { e: "🤖", n: "ロボット" },
@@ -996,7 +1004,7 @@
     { e: "🧟", n: "ゾンビ" },
     { e: "🧙", n: "まほうつかい" },
     { e: "☺️", n: "にっこり" },
-    { e: "😺", n: "笑う猫" }
+    { e: "😺", n: "笑う猫", furi: "笑[わら]う猫[ねこ]" }
   ];
 
   var FOODS = [
@@ -1097,6 +1105,81 @@
   var MIN_GROW_SCALE = .55;
   var MAX_GROW_SCALE = 1.15;
 
+  var SAVE_KEY = "matsushiAnimalGameSave_v1";
+
+  function saveState() {
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify({
+        level: level,
+        totalFeeds: totalFeeds,
+        feedsInEncounter: feedsInEncounter,
+        collected: collected,
+        collectedCount: collectedCount,
+        currentIndex: currentIndex,
+        currentIsNew: currentIsNew,
+        cleared: cleared,
+        selectedFoodIndex: selectedFoodIndex,
+        coins: coins,
+        decorations: decorations,
+        decorationPlacements: decorationPlacements,
+        nextPlacementId: nextPlacementId,
+        wishes: wishes,
+        roomMembers: roomMembers
+      }));
+    } catch (err) {}
+  }
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return false;
+      var data = JSON.parse(raw);
+      if (!data || typeof data !== "object") return false;
+
+      level = data.level || 1;
+      totalFeeds = data.totalFeeds || 0;
+      feedsInEncounter = data.feedsInEncounter || 0;
+      collected = data.collected || {};
+      collectedCount = data.collectedCount || 0;
+      currentIndex = (typeof data.currentIndex === "number" && data.currentIndex >= 0 && data.currentIndex < ANIMALS.length)
+        ? data.currentIndex : -1;
+      currentIsNew = !!data.currentIsNew;
+      cleared = !!data.cleared;
+      selectedFoodIndex = data.selectedFoodIndex || 0;
+      coins = data.coins || 0;
+      decorations = data.decorations || {};
+      decorationPlacements = data.decorationPlacements || [];
+      nextPlacementId = data.nextPlacementId || 1;
+      wishes = data.wishes || {};
+      roomMembers = data.roomMembers || {};
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function escapeHtml(text) {
+    return String(text)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  function animalNameHtml(animal) {
+    var text = animal.furi || animal.n;
+    var out = "";
+    var re = /([^\[\]]+)\[([^\[\]]+)\]/g;
+    var lastIndex = 0;
+    var m;
+    while ((m = re.exec(text))) {
+      if (m.index > lastIndex) out += escapeHtml(text.slice(lastIndex, m.index));
+      out += "<ruby>" + escapeHtml(m[1]) + "<rt>" + escapeHtml(m[2]) + "</rt></ruby>";
+      lastIndex = re.lastIndex;
+    }
+    out += escapeHtml(text.slice(lastIndex));
+    return out;
+  }
+
   function isCleared() {
     return collectedCount >= ANIMALS.length;
   }
@@ -1131,7 +1214,7 @@
     collectedCountEl.textContent = String(collectedCount);
 
     var animal = ANIMALS[currentIndex];
-    stageNameEl.textContent = animal.n;
+    stageNameEl.innerHTML = animalNameHtml(animal);
     animalEl.textContent = animal.e;
     newBadge.hidden = !currentIsNew;
     totalFeedsEl.textContent = String(totalFeeds);
@@ -1151,6 +1234,7 @@
 
     renderFoodRow();
     feedKeyIndicator.classList.toggle("dim", cleared || feedCooldown);
+    saveState();
   }
 
   function getSelectedFoodEmoji() {
@@ -1407,6 +1491,7 @@
         toggleRoomMember(parseInt(this.getAttribute("data-animal"), 10));
       });
     }
+    saveState();
   }
 
   function setupRoomClouds() {
@@ -1560,7 +1645,7 @@
       }
 
       lanesHtml[lane] += '<div class="room-walker" style="' + style + '">' + wishHtml +
-        '<span class="room-name">' + ANIMALS[i].n + '</span>' +
+        '<span class="room-name">' + animalNameHtml(ANIMALS[i]) + '</span>' +
         '<span class="room-emoji">' + ANIMALS[i].e + '</span>' +
         '</div>';
     }
@@ -1682,6 +1767,8 @@
       if (!moved) {
         selectedDecoPid = selectedDecoPid === pid ? null : pid;
         renderRoom();
+      } else {
+        saveState();
       }
     }
 
@@ -1772,8 +1859,16 @@
   document.getElementById("clearTotal").textContent = String(ANIMALS.length);
 
   setupRoomClouds();
+
+  var loaded = loadState();
+  if (!loaded || currentIndex < 0) {
+    startEncounter();
+  }
+  if (cleared) {
+    clearStatsEl.textContent = "さいしゅう Lv." + level + " / えさをあげた かいすう " + totalFeeds + " かい";
+    clearOverlay.hidden = false;
+  }
   updateCoinDisplays();
-  startEncounter();
   render();
 })();
 </script>
