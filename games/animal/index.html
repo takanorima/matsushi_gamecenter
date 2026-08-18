@@ -284,10 +284,10 @@
     animation: none;
   }
   @keyframes stageWalk {
-    0%   { transform: translateX(-6rem) scaleX(-1); }
-    45%  { transform: translateX(-6rem) scaleX(-1); }
-    55%  { transform: translateX(6rem) scaleX(1); }
-    100% { transform: translateX(6rem) scaleX(1); }
+    0%   { transform: translateX(-6rem) scaleX(1); }
+    45%  { transform: translateX(-6rem) scaleX(1); }
+    55%  { transform: translateX(6rem) scaleX(-1); }
+    100% { transform: translateX(6rem) scaleX(-1); }
   }
   .animal-bob {
     display: inline-flex;
@@ -667,6 +667,38 @@
     0%   { transform: translateX(-3rem); }
     100% { transform: translateX(calc(100% + 3rem)); }
   }
+  .room-weather {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .room-raindrop {
+    position: absolute;
+    top: -1rem;
+    font-size: 1rem;
+    opacity: .75;
+    animation: rainFall linear infinite;
+  }
+  @keyframes rainFall {
+    0%   { transform: translateY(0); opacity: 0; }
+    10%  { opacity: .75; }
+    90%  { opacity: .75; }
+    100% { transform: translateY(9rem); opacity: 0; }
+  }
+  .room-rainbow {
+    position: absolute;
+    top: .3rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.6rem;
+    animation: rainbowFade .8s ease-out;
+  }
+  @keyframes rainbowFade {
+    0%   { opacity: 0; transform: translateX(-50%) translateY(-.4rem); }
+    100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
   .room-deco-placed {
     position: absolute;
     font-size: 1.9rem;
@@ -985,12 +1017,14 @@
     <div class="zukan-head">
       <h2>どうぶつの おへや</h2>
       <span id="roomCount"></span>
+      <button type="button" class="zukan-close" id="roomSoundBtn" aria-label="おとをオンにする">🔇</button>
       <button type="button" class="zukan-close" id="roomClose" aria-label="とじる">✕</button>
     </div>
     <button type="button" class="zukan-btn" id="roomPickBtn" style="align-self:center; margin-bottom:.6rem;">🐾 どうぶつを えらぶ(図鑑をひらく)</button>
     <p class="room-shop-label">かざりは ドラッグで すきな ばしょに うごかせるよ</p>
     <div class="room-scene" id="roomScene">
       <div class="room-clouds" id="roomClouds" aria-hidden="true"></div>
+      <div class="room-weather" id="roomWeather" aria-hidden="true"></div>
       <div class="room-grid" id="roomGrid"></div>
       <div id="decoToolbarSlot"></div>
     </div>
@@ -1183,9 +1217,11 @@
   var roomOverlay = document.getElementById("roomOverlay");
   var roomGrid = document.getElementById("roomGrid");
   var roomClouds = document.getElementById("roomClouds");
+  var roomWeatherEl = document.getElementById("roomWeather");
   var decoToolbarSlot = document.getElementById("decoToolbarSlot");
   var roomCount = document.getElementById("roomCount");
   var roomClose = document.getElementById("roomClose");
+  var roomSoundBtn = document.getElementById("roomSoundBtn");
   var roomPickBtn = document.getElementById("roomPickBtn");
   var coinValueEl = document.getElementById("coinValue");
   var shopCoinValueEl = document.getElementById("shopCoinValue");
@@ -1253,7 +1289,8 @@
         decorationPlacements: decorationPlacements,
         nextPlacementId: nextPlacementId,
         wishes: wishes,
-        roomMembers: roomMembers
+        roomMembers: roomMembers,
+        roomSoundOn: roomSoundOn
       }));
     } catch (err) {}
   }
@@ -1281,6 +1318,7 @@
       nextPlacementId = data.nextPlacementId || 1;
       wishes = data.wishes || {};
       roomMembers = data.roomMembers || {};
+      roomSoundOn = !!data.roomSoundOn;
       return true;
     } catch (err) {
       return false;
@@ -1446,6 +1484,102 @@
     } catch (e) {
       // ignore audio playback errors (e.g. autoplay restrictions)
     }
+  }
+
+  var roomSoundOn = false;
+  var ambienceNodes = null;
+  var ambienceChirpTimer = null;
+
+  function playChirp() {
+    var ctx = getAudioCtx();
+    if (!ctx) return;
+    try {
+      var now = ctx.currentTime;
+      var startFreq = 1800 + Math.random() * 900;
+      var osc = ctx.createOscillator();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(startFreq, now);
+      osc.frequency.exponentialRampToValueAtTime(startFreq * (1.3 + Math.random() * 0.4), now + 0.07);
+      osc.frequency.exponentialRampToValueAtTime(startFreq * 0.8, now + 0.14);
+      var gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.05, now + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.18);
+    } catch (e) {
+      // ignore audio playback errors
+    }
+  }
+
+  function scheduleNextChirp() {
+    var delay = 1200 + Math.random() * 3000;
+    ambienceChirpTimer = setTimeout(function () {
+      if (!roomSoundOn || !ambienceNodes) return;
+      if (Math.random() < 0.7) playChirp();
+      scheduleNextChirp();
+    }, delay);
+  }
+
+  function startRoomAmbience() {
+    if (ambienceNodes) return;
+    var ctx = getAudioCtx();
+    if (!ctx) return;
+    try {
+      var bufferSize = ctx.sampleRate * 2;
+      var buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      var data = buffer.getChannelData(0);
+      for (var i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+      var noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+      noise.loop = true;
+
+      var filter = ctx.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.frequency.value = 500;
+
+      var gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.035, ctx.currentTime + 1.2);
+
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      noise.start();
+
+      ambienceNodes = { noise: noise, gain: gain };
+      scheduleNextChirp();
+    } catch (e) {
+      ambienceNodes = null;
+    }
+  }
+
+  function stopRoomAmbience() {
+    if (ambienceChirpTimer) {
+      clearTimeout(ambienceChirpTimer);
+      ambienceChirpTimer = null;
+    }
+    if (ambienceNodes) {
+      try {
+        var ctx = getAudioCtx();
+        var now = ctx ? ctx.currentTime : 0;
+        ambienceNodes.gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+        ambienceNodes.noise.stop(now + 0.35);
+      } catch (e) {
+        // ignore
+      }
+      ambienceNodes = null;
+    }
+  }
+
+  function updateRoomSoundBtn() {
+    if (!roomSoundBtn) return;
+    roomSoundBtn.textContent = roomSoundOn ? "🔊" : "🔇";
+    roomSoundBtn.setAttribute("aria-label", roomSoundOn ? "おとをオフにする" : "おとをオンにする");
   }
 
   function spawnFlyingFood(emoji) {
@@ -1636,6 +1770,60 @@
         clouds[i].duration + 's; animation-delay:' + clouds[i].delay + 's;">☁️</span>';
     }
     roomClouds.innerHTML = html;
+  }
+
+  var roomWeatherTimer = null;
+  var roomWeatherClearTimer = null;
+
+  function clearRoomWeatherEffect() {
+    if (roomWeatherClearTimer) { clearTimeout(roomWeatherClearTimer); roomWeatherClearTimer = null; }
+    roomWeatherEl.innerHTML = "";
+  }
+
+  function triggerRain() {
+    var drops = [];
+    for (var i = 0; i < 10; i++) {
+      drops.push({
+        left: Math.round(Math.random() * 96),
+        duration: (0.7 + Math.random() * 0.5).toFixed(2),
+        delay: (Math.random() * -1.2).toFixed(2)
+      });
+    }
+    var html = "";
+    for (var d = 0; d < drops.length; d++) {
+      html += '<span class="room-raindrop" style="left:' + drops[d].left + '%; animation-duration:' +
+        drops[d].duration + 's; animation-delay:' + drops[d].delay + 's;">💧</span>';
+    }
+    roomWeatherEl.innerHTML = html;
+    roomWeatherClearTimer = setTimeout(clearRoomWeatherEffect, 9000);
+  }
+
+  function triggerRainbow() {
+    roomWeatherEl.innerHTML = '<span class="room-rainbow">🌈</span>';
+    roomWeatherClearTimer = setTimeout(clearRoomWeatherEffect, 10000);
+  }
+
+  function scheduleNextWeather() {
+    var delay = 20000 + Math.random() * 12000;
+    roomWeatherTimer = setTimeout(function () {
+      var roll = Math.random();
+      if (roll < 0.25) {
+        triggerRain();
+      } else if (roll < 0.4) {
+        triggerRainbow();
+      }
+      scheduleNextWeather();
+    }, delay);
+  }
+
+  function startRoomWeather() {
+    if (roomWeatherTimer) return;
+    scheduleNextWeather();
+  }
+
+  function stopRoomWeather() {
+    if (roomWeatherTimer) { clearTimeout(roomWeatherTimer); roomWeatherTimer = null; }
+    clearRoomWeatherEffect();
   }
 
   function updateCoinDisplays() {
@@ -1952,12 +2140,29 @@
     renderRoom();
     renderRoomShop();
     roomOverlay.hidden = false;
+    updateRoomSoundBtn();
+    startRoomWeather();
+    if (roomSoundOn) startRoomAmbience();
   });
   roomClose.addEventListener("click", function () {
     roomOverlay.hidden = true;
+    stopRoomAmbience();
+    stopRoomWeather();
+  });
+  roomSoundBtn.addEventListener("click", function () {
+    roomSoundOn = !roomSoundOn;
+    updateRoomSoundBtn();
+    if (roomSoundOn) {
+      startRoomAmbience();
+    } else {
+      stopRoomAmbience();
+    }
+    saveState();
   });
   roomPickBtn.addEventListener("click", function () {
     roomOverlay.hidden = true;
+    stopRoomAmbience();
+    stopRoomWeather();
     renderZukan();
     zukanOverlay.hidden = false;
   });
@@ -1997,7 +2202,7 @@
 
     var diff = stageTargetOffset - stageCurrentOffset;
     if (Math.abs(diff) > 0.5) {
-      stageFacing = diff > 0 ? 1 : -1;
+      stageFacing = diff > 0 ? -1 : 1;
       var maxStep = STAGE_WALK_SPEED * dt;
       stageCurrentOffset += Math.abs(diff) <= maxStep ? diff : Math.sign(diff) * maxStep;
     } else {
@@ -2058,6 +2263,7 @@
     clearOverlay.hidden = false;
   }
   updateCoinDisplays();
+  updateRoomSoundBtn();
   render();
 })();
 </script>
