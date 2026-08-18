@@ -629,6 +629,64 @@
     color: var(--ink-soft);
   }
 
+  .room-tabs {
+    display: flex;
+    gap: .35rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 0 0 .6rem;
+  }
+  .room-tab {
+    flex: none;
+    white-space: nowrap;
+    background: var(--sub);
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    padding: .3rem .65rem;
+    font: inherit;
+    font-weight: 700;
+    font-size: .78rem;
+    color: var(--ink);
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .room-tab.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .room-scene.theme-sea {
+    --sky: #eaf7ff;
+    --grass: #a8ddf0;
+    --grass-deep: #7cc3e0;
+  }
+  .room-scene.theme-snow {
+    --sky: #eef6ff;
+    --grass: #ffffff;
+    --grass-deep: #e6eef5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .room-scene.theme-sea {
+      --sky: #16283f;
+      --grass: #123a52;
+      --grass-deep: #0d2c3f;
+    }
+    :root:not([data-theme="light"]) .room-scene.theme-snow {
+      --sky: #1b2540;
+      --grass: #3a4560;
+      --grass-deep: #2a3350;
+    }
+  }
+  :root[data-theme="dark"] .room-scene.theme-sea {
+    --sky: #16283f;
+    --grass: #123a52;
+    --grass-deep: #0d2c3f;
+  }
+  :root[data-theme="dark"] .room-scene.theme-snow {
+    --sky: #1b2540;
+    --grass: #3a4560;
+    --grass-deep: #2a3350;
+  }
   .room-scene {
     position: relative;
     height: 8.5rem;
@@ -1028,6 +1086,7 @@
       <button type="button" class="zukan-close" id="roomClose" aria-label="とじる">✕</button>
     </div>
     <button type="button" class="zukan-btn" id="roomPickBtn" style="align-self:center; margin-bottom:.6rem;">🐾 どうぶつを えらぶ(図鑑をひらく)</button>
+    <div class="room-tabs" id="roomTabs"></div>
     <p class="room-shop-label">かざりは ドラッグで すきな ばしょに うごかせるよ</p>
     <div class="room-scene" id="roomScene">
       <div class="room-clouds" id="roomClouds" aria-hidden="true"></div>
@@ -1222,6 +1281,8 @@
   var zukanClose = document.getElementById("zukanClose");
   var roomBtn = document.getElementById("roomBtn");
   var roomOverlay = document.getElementById("roomOverlay");
+  var roomScene = document.getElementById("roomScene");
+  var roomTabsEl = document.getElementById("roomTabs");
   var roomGrid = document.getElementById("roomGrid");
   var roomClouds = document.getElementById("roomClouds");
   var roomWeatherEl = document.getElementById("roomWeather");
@@ -1265,13 +1326,20 @@
   var selectedFoodIndex = 0;
   var coins = 0;
   var decorations = {};
-  var decorationPlacements = [];
   var nextPlacementId = 1;
   var selectedDecoPid = null;
   var DECO_MIN_SCALE = .5;
   var DECO_MAX_SCALE = 2.5;
   var wishes = {};
-  var roomMembers = {};
+  var ROOM_THEMES = [
+    { id: "meadow", cls: "", label: "🌳 げんっぱ" },
+    { id: "sea", cls: "theme-sea", label: "🌊 うみ" },
+    { id: "snow", cls: "theme-snow", label: "❄️ ゆき" }
+  ];
+  function makeEmptyRoom() { return { members: {}, decorationPlacements: [] }; }
+  var rooms = [makeEmptyRoom(), makeEmptyRoom(), makeEmptyRoom()];
+  var activeRoomIndex = 0;
+  function currentRoom() { return rooms[activeRoomIndex]; }
   var largeTextOn = false;
   var transitioning = false;
   var feedCooldown = false;
@@ -1295,10 +1363,10 @@
         selectedFoodIndex: selectedFoodIndex,
         coins: coins,
         decorations: decorations,
-        decorationPlacements: decorationPlacements,
         nextPlacementId: nextPlacementId,
         wishes: wishes,
-        roomMembers: roomMembers,
+        rooms: rooms,
+        activeRoomIndex: activeRoomIndex,
         roomSoundOn: roomSoundOn,
         largeTextOn: largeTextOn
       }));
@@ -1324,10 +1392,26 @@
       selectedFoodIndex = data.selectedFoodIndex || 0;
       coins = data.coins || 0;
       decorations = data.decorations || {};
-      decorationPlacements = data.decorationPlacements || [];
       nextPlacementId = data.nextPlacementId || 1;
       wishes = data.wishes || {};
-      roomMembers = data.roomMembers || {};
+
+      if (Array.isArray(data.rooms) && data.rooms.length > 0) {
+        rooms = [];
+        for (var r = 0; r < ROOM_THEMES.length; r++) {
+          var savedRoom = data.rooms[r];
+          rooms.push(savedRoom ? {
+            members: savedRoom.members || {},
+            decorationPlacements: savedRoom.decorationPlacements || []
+          } : makeEmptyRoom());
+        }
+      } else {
+        rooms = [makeEmptyRoom(), makeEmptyRoom(), makeEmptyRoom()];
+        rooms[0].members = data.roomMembers || {};
+        rooms[0].decorationPlacements = data.decorationPlacements || [];
+      }
+      activeRoomIndex = (typeof data.activeRoomIndex === "number" && data.activeRoomIndex >= 0 && data.activeRoomIndex < rooms.length)
+        ? data.activeRoomIndex : 0;
+
       roomSoundOn = !!data.roomSoundOn;
       largeTextOn = !!data.largeTextOn;
       return true;
@@ -1743,10 +1827,11 @@
   }
 
   function toggleRoomMember(index) {
-    if (roomMembers[index]) {
-      delete roomMembers[index];
+    var members = currentRoom().members;
+    if (members[index]) {
+      delete members[index];
     } else {
-      roomMembers[index] = true;
+      members[index] = true;
     }
     renderZukan();
   }
@@ -1756,7 +1841,7 @@
     var html = "";
     for (var i = 0; i < ANIMALS.length; i++) {
       if (collected[i]) {
-        var inRoom = !!roomMembers[i];
+        var inRoom = !!currentRoom().members[i];
         html += '<button type="button" class="zukan-cell collected' + (inRoom ? " in-room" : "") +
           '" data-animal="' + i + '" title="' + ANIMALS[i].n + (inRoom ? "(おへやに いる)" : "") + '">' +
           ANIMALS[i].e + (inRoom ? '<span class="zukan-check">★</span>' : "") + '</button>';
@@ -1882,20 +1967,23 @@
     coins -= item.cost;
     decorations[id] = (decorations[id] || 0) + 1;
 
-    var defaultX = 10 + (decorationPlacements.length * 42) % 260;
-    var defaultY = 10 + (decorationPlacements.length % 3) * 24;
-    decorationPlacements.push({ pid: nextPlacementId++, deco: id, x: defaultX, y: defaultY, scale: 1 });
+    var placements = currentRoom().decorationPlacements;
+    var defaultX = 10 + (placements.length * 42) % 260;
+    var defaultY = 10 + (placements.length % 3) * 24;
+    placements.push({ pid: nextPlacementId++, deco: id, x: defaultX, y: defaultY, scale: 1 });
 
     updateCoinDisplays();
     renderRoom();
     renderRoomShop();
+    saveState();
   }
 
   function refreshWishes() {
     wishes = {};
+    var members = currentRoom().members;
     var roomIndices = [];
     for (var i = 0; i < ANIMALS.length; i++) {
-      if (roomMembers[i]) roomIndices.push(i);
+      if (members[i]) roomIndices.push(i);
     }
     if (roomIndices.length === 0) return;
 
@@ -1929,15 +2017,54 @@
   var ROOM_LANE_COUNT = 1;
   var ROOM_COLUMN_WIDTH_REM = 4.5;
 
+  function applyRoomTheme() {
+    roomScene.classList.remove("theme-sea", "theme-snow");
+    var cls = ROOM_THEMES[activeRoomIndex].cls;
+    if (cls) roomScene.classList.add(cls);
+  }
+
+  function renderRoomTabs() {
+    var html = "";
+    for (var i = 0; i < ROOM_THEMES.length; i++) {
+      html += '<button type="button" class="room-tab' + (i === activeRoomIndex ? " active" : "") +
+        '" data-room="' + i + '">' + ROOM_THEMES[i].label + '</button>';
+    }
+    roomTabsEl.innerHTML = html;
+    var tabBtns = roomTabsEl.querySelectorAll(".room-tab");
+    for (var t = 0; t < tabBtns.length; t++) {
+      tabBtns[t].addEventListener("click", function () {
+        switchRoom(parseInt(this.getAttribute("data-room"), 10));
+      });
+    }
+  }
+
+  function switchRoom(index) {
+    if (index === activeRoomIndex) return;
+    stopRoomAmbience();
+    stopRoomWeather();
+    activeRoomIndex = index;
+    applyRoomTheme();
+    refreshWishes();
+    renderRoom();
+    renderRoomShop();
+    renderRoomTabs();
+    startRoomWeather();
+    if (roomSoundOn) startRoomAmbience();
+    saveState();
+  }
+
   function roomMemberCount() {
+    var members = currentRoom().members;
     var n = 0;
     for (var i = 0; i < ANIMALS.length; i++) {
-      if (roomMembers[i]) n++;
+      if (members[i]) n++;
     }
     return n;
   }
 
   function renderRoom() {
+    var members = currentRoom().members;
+    var decorationPlacements = currentRoom().decorationPlacements;
     var memberCount = roomMemberCount();
     roomCount.textContent = memberCount + " ひき";
 
@@ -1956,7 +2083,7 @@
 
     var order = 0;
     for (var i = 0; i < ANIMALS.length; i++) {
-      if (!roomMembers[i]) continue;
+      if (!members[i]) continue;
       var lane = order % ROOM_LANE_COUNT;
       var column = Math.floor(order / ROOM_LANE_COUNT);
       order++;
@@ -2058,12 +2185,14 @@
         cur = action === "bigger" ? cur + 0.2 : cur - 0.2;
         pl.scale = Math.round(Math.min(DECO_MAX_SCALE, Math.max(DECO_MIN_SCALE, cur)) * 100) / 100;
         renderRoom();
+        saveState();
       });
     }
   }
 
   function makeDecoDraggable(el) {
     var pid = parseInt(el.getAttribute("data-pid"), 10);
+    var decorationPlacements = currentRoom().decorationPlacements;
     var placement = null;
     for (var i = 0; i < decorationPlacements.length; i++) {
       if (decorationPlacements[i].pid === pid) { placement = decorationPlacements[i]; break; }
@@ -2134,11 +2263,11 @@
     selectedFoodIndex = 0;
     coins = 0;
     decorations = {};
-    decorationPlacements = [];
     nextPlacementId = 1;
     selectedDecoPid = null;
     wishes = {};
-    roomMembers = {};
+    rooms = [makeEmptyRoom(), makeEmptyRoom(), makeEmptyRoom()];
+    activeRoomIndex = 0;
     updateCoinDisplays();
     clearOverlay.hidden = true;
     startEncounter();
@@ -2153,6 +2282,8 @@
     zukanOverlay.hidden = true;
   });
   roomBtn.addEventListener("click", function () {
+    applyRoomTheme();
+    renderRoomTabs();
     refreshWishes();
     renderRoom();
     renderRoomShop();
