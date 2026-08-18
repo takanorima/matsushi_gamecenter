@@ -67,6 +67,7 @@
 
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
+  html[data-textsize="large"] { font-size: 125%; }
   body {
     background:
       linear-gradient(var(--paper-line) 1px, transparent 1px) 0 0 / 28px 28px,
@@ -160,6 +161,11 @@
     color: var(--ink);
     cursor: pointer;
     touch-action: manipulation;
+  }
+  .zukan-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
   }
 
   .card {
@@ -950,6 +956,7 @@
     <span class="stat-pill">📖 <strong id="collectedCount">0</strong> / <strong id="statTotal">0</strong></span>
     <button type="button" class="zukan-btn" id="zukanBtn">📖 図鑑</button>
     <button type="button" class="zukan-btn" id="roomBtn">🏠 おへや</button>
+    <button type="button" class="zukan-btn" id="textSizeBtn" aria-label="文字を大きくする">🔤 文字</button>
   </div>
 
   <div class="hud-corner">
@@ -1222,6 +1229,7 @@
   var roomCount = document.getElementById("roomCount");
   var roomClose = document.getElementById("roomClose");
   var roomSoundBtn = document.getElementById("roomSoundBtn");
+  var textSizeBtn = document.getElementById("textSizeBtn");
   var roomPickBtn = document.getElementById("roomPickBtn");
   var coinValueEl = document.getElementById("coinValue");
   var shopCoinValueEl = document.getElementById("shopCoinValue");
@@ -1264,6 +1272,7 @@
   var DECO_MAX_SCALE = 2.5;
   var wishes = {};
   var roomMembers = {};
+  var largeTextOn = false;
   var transitioning = false;
   var feedCooldown = false;
   var FEED_COOLDOWN_MS = 350;
@@ -1290,7 +1299,8 @@
         nextPlacementId: nextPlacementId,
         wishes: wishes,
         roomMembers: roomMembers,
-        roomSoundOn: roomSoundOn
+        roomSoundOn: roomSoundOn,
+        largeTextOn: largeTextOn
       }));
     } catch (err) {}
   }
@@ -1319,6 +1329,7 @@
       wishes = data.wishes || {};
       roomMembers = data.roomMembers || {};
       roomSoundOn = !!data.roomSoundOn;
+      largeTextOn = !!data.largeTextOn;
       return true;
     } catch (err) {
       return false;
@@ -1580,6 +1591,12 @@
     if (!roomSoundBtn) return;
     roomSoundBtn.textContent = roomSoundOn ? "🔊" : "🔇";
     roomSoundBtn.setAttribute("aria-label", roomSoundOn ? "おとをオフにする" : "おとをオンにする");
+  }
+
+  function applyTextSize() {
+    document.documentElement.setAttribute("data-textsize", largeTextOn ? "large" : "normal");
+    textSizeBtn.classList.toggle("active", largeTextOn);
+    textSizeBtn.setAttribute("aria-label", largeTextOn ? "文字を もとの おおきさに もどす" : "文字を大きくする");
   }
 
   function spawnFlyingFood(emoji) {
@@ -2159,6 +2176,11 @@
     }
     saveState();
   });
+  textSizeBtn.addEventListener("click", function () {
+    largeTextOn = !largeTextOn;
+    applyTextSize();
+    saveState();
+  });
   roomPickBtn.addEventListener("click", function () {
     roomOverlay.hidden = true;
     stopRoomAmbience();
@@ -2264,6 +2286,7 @@
   }
   updateCoinDisplays();
   updateRoomSoundBtn();
+  applyTextSize();
   render();
 })();
 </script>
