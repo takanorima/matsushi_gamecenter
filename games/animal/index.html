@@ -296,6 +296,7 @@
     100% { transform: translateX(6rem) scaleX(-1); }
   }
   .animal-bob {
+    position: relative;
     display: inline-flex;
     animation: walkBob .5s ease-in-out infinite;
   }
@@ -316,6 +317,15 @@
   }
   .animal.bounce {
     animation: chomp .5s ease;
+  }
+  .animal.petted {
+    animation: stagePetBounce .45s ease;
+  }
+  @keyframes stagePetBounce {
+    0%   { transform: scale(var(--grow-scale)) rotate(0); }
+    30%  { transform: scale(calc(var(--grow-scale) * 1.25)) rotate(-8deg); }
+    60%  { transform: scale(calc(var(--grow-scale) * .95)) rotate(6deg); }
+    100% { transform: scale(var(--grow-scale)) rotate(0); }
   }
   @keyframes chomp {
     0%   { transform: scale(var(--grow-scale)) rotate(0); }
@@ -1134,7 +1144,7 @@
     <p class="stage-name" id="stageName"></p>
     <div class="animal-stage" id="animalStage">
       <div class="animal-walk" id="animalWalk">
-        <div class="animal-bob">
+        <div class="animal-bob" id="animalBob">
           <span class="animal" id="animalEmoji"></span>
         </div>
       </div>
@@ -1367,6 +1377,7 @@
   var animalEl = document.getElementById("animalEmoji");
   var animalStageEl = document.getElementById("animalStage");
   var animalWalkEl = document.getElementById("animalWalk");
+  var animalBobEl = document.getElementById("animalBob");
   var foodCursorEl = document.getElementById("foodCursor");
   var STAGE_WALK_SPEED = 130;
   var stageCurrentOffset = 0;
@@ -1874,6 +1885,18 @@
     heart.className = "room-pet-heart";
     heart.textContent = "💕";
     walkerEl.appendChild(heart);
+    heart.addEventListener("animationend", function () { heart.remove(); });
+    playChirp();
+  }
+
+  function petStageAnimal() {
+    animalEl.classList.remove("petted");
+    void animalEl.offsetWidth;
+    animalEl.classList.add("petted");
+    var heart = document.createElement("span");
+    heart.className = "room-pet-heart";
+    heart.textContent = "💕";
+    animalBobEl.appendChild(heart);
     heart.addEventListener("animationend", function () { heart.remove(); });
     playChirp();
   }
@@ -2634,7 +2657,12 @@
   animalEl.addEventListener("click", function (e) {
     e.stopPropagation();
     if (!canFeedNow()) return;
-    feed(getSelectedFoodEmoji());
+    var foodEmoji = getSelectedFoodEmoji();
+    if (foodEmoji) {
+      feed(foodEmoji);
+    } else {
+      petStageAnimal();
+    }
   });
 
   document.getElementById("goalTotal").textContent = String(ANIMALS.length);
