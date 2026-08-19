@@ -746,6 +746,52 @@
     background-repeat: repeat-x;
     pointer-events: none;
   }
+  .room-scene.theme-sea::before {
+    height: .5rem;
+    background: radial-gradient(circle at 50% 100%, var(--grass-deep) 45%, transparent 46%);
+    background-size: .6rem .5rem;
+    background-position: bottom;
+    animation: waveDrift 2.4s linear infinite;
+  }
+  @keyframes waveDrift {
+    0%   { background-position-x: 0; }
+    100% { background-position-x: .6rem; }
+  }
+  .room-scene.theme-snow::before {
+    height: .45rem;
+    background: radial-gradient(circle at 50% 100%, var(--grass-deep) 55%, transparent 56%);
+    background-size: .7rem .35rem;
+    background-position: bottom;
+    opacity: .7;
+  }
+  .room-theme-fx {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .room-snowflake {
+    position: absolute;
+    top: -1rem;
+    font-size: .9rem;
+    opacity: .85;
+    animation: snowFall linear infinite;
+  }
+  @keyframes snowFall {
+    0%   { transform: translateY(0) translateX(0); opacity: 0; }
+    10%  { opacity: .85; }
+    100% { transform: translateY(9rem) translateX(.6rem); opacity: .85; }
+  }
+  .room-fish {
+    position: absolute;
+    font-size: 1rem;
+    opacity: .85;
+    animation: fishDrift linear infinite;
+  }
+  @keyframes fishDrift {
+    0%   { transform: translateX(-2rem); }
+    100% { transform: translateX(calc(100% + 2rem)); }
+  }
   .room-cloud {
     position: absolute;
     font-size: 1.8rem;
@@ -1141,6 +1187,7 @@
     <p class="room-shop-label">かざりは ドラッグで すきな ばしょに うごかせるよ</p>
     <div class="room-scene" id="roomScene">
       <div class="room-clouds" id="roomClouds" aria-hidden="true"></div>
+      <div class="room-theme-fx" id="roomThemeFx" aria-hidden="true"></div>
       <div class="room-weather" id="roomWeather" aria-hidden="true"></div>
       <div class="room-grid" id="roomGrid"></div>
       <div id="decoToolbarSlot"></div>
@@ -1338,6 +1385,7 @@
   var roomGrid = document.getElementById("roomGrid");
   var roomClouds = document.getElementById("roomClouds");
   var roomWeatherEl = document.getElementById("roomWeather");
+  var roomThemeFxEl = document.getElementById("roomThemeFx");
   var decoToolbarSlot = document.getElementById("decoToolbarSlot");
   var roomCount = document.getElementById("roomCount");
   var roomClose = document.getElementById("roomClose");
@@ -2137,6 +2185,36 @@
     roomScene.classList.remove("theme-sea", "theme-snow");
     var cls = ROOM_THEMES[activeRoomIndex].cls;
     if (cls) roomScene.classList.add(cls);
+    renderThemeFx();
+  }
+
+  function renderThemeFx() {
+    var theme = ROOM_THEMES[activeRoomIndex].id;
+    var html = "";
+    if (theme === "snow") {
+      var flakes = [
+        { left: 8, duration: 5, delay: 0 },
+        { left: 30, duration: 6.5, delay: -2 },
+        { left: 52, duration: 5.5, delay: -4 },
+        { left: 70, duration: 7, delay: -1 },
+        { left: 88, duration: 6, delay: -3 }
+      ];
+      for (var i = 0; i < flakes.length; i++) {
+        html += '<span class="room-snowflake" style="left:' + flakes[i].left + '%; animation-duration:' +
+          flakes[i].duration + 's; animation-delay:' + flakes[i].delay + 's;">❄️</span>';
+      }
+    } else if (theme === "sea") {
+      var fish = [
+        { top: 68, duration: 22, delay: 0, e: "🐟" },
+        { top: 80, duration: 28, delay: -10, e: "🐠" },
+        { top: 74, duration: 25, delay: -18, e: "🫧" }
+      ];
+      for (var f = 0; f < fish.length; f++) {
+        html += '<span class="room-fish" style="top:' + fish[f].top + '%; animation-duration:' +
+          fish[f].duration + 's; animation-delay:' + fish[f].delay + 's;">' + fish[f].e + '</span>';
+      }
+    }
+    roomThemeFxEl.innerHTML = html;
   }
 
   function renderRoomTabs() {
