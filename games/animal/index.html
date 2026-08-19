@@ -856,6 +856,30 @@
     font-size: 2rem;
     line-height: 1;
     display: inline-block;
+    cursor: pointer;
+  }
+  .room-walker .room-emoji.petted {
+    animation: petBounce .45s ease;
+  }
+  @keyframes petBounce {
+    0%   { transform: scale(1) rotate(0); }
+    30%  { transform: scale(1.25) rotate(-8deg); }
+    60%  { transform: scale(.95) rotate(6deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+  .room-pet-heart {
+    position: absolute;
+    top: -1.4rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1rem;
+    pointer-events: none;
+    animation: petHeartFloat 1s ease-out forwards;
+  }
+  @keyframes petHeartFloat {
+    0%   { opacity: 0; transform: translateX(-50%) translateY(0) scale(.6); }
+    20%  { opacity: 1; transform: translateX(-50%) translateY(-.3rem) scale(1); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-1.6rem) scale(1); }
   }
   .room-walker .room-name {
     font-size: .58rem;
@@ -1709,6 +1733,21 @@
     animalEl.classList.add("bounce");
   }
 
+  function petAnimal(walkerEl) {
+    var emojiEl = walkerEl.querySelector(".room-emoji");
+    if (emojiEl) {
+      emojiEl.classList.remove("petted");
+      void emojiEl.offsetWidth;
+      emojiEl.classList.add("petted");
+    }
+    var heart = document.createElement("span");
+    heart.className = "room-pet-heart";
+    heart.textContent = "💕";
+    walkerEl.appendChild(heart);
+    heart.addEventListener("animationend", function () { heart.remove(); });
+    playChirp();
+  }
+
   function playCollectFlyAnimation(emoji) {
     var startRect = animalEl.getBoundingClientRect();
     var endRect = zukanBtn.getBoundingClientRect();
@@ -2157,6 +2196,14 @@
         var idx = parseInt(this.getAttribute("data-animal"), 10);
         var decoId = this.getAttribute("data-deco");
         handleWishClick(idx, decoId, this);
+      });
+    }
+
+    var walkerEls = roomGrid.querySelectorAll(".room-walker");
+    for (var we = 0; we < walkerEls.length; we++) {
+      walkerEls[we].addEventListener("click", function (e) {
+        if (e.target.closest(".room-wish")) return;
+        petAnimal(this);
       });
     }
 
