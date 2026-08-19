@@ -68,6 +68,7 @@
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   html[data-textsize="large"] { font-size: 125%; }
+  html[data-textsize="small"] { font-size: 85%; }
   body {
     background:
       linear-gradient(var(--paper-line) 1px, transparent 1px) 0 0 / 28px 28px,
@@ -163,6 +164,31 @@
     touch-action: manipulation;
   }
   .zukan-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .text-size-group {
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+    flex: none;
+  }
+  .text-size-btn {
+    flex: none;
+    white-space: nowrap;
+    background: var(--sub);
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    padding: .12rem .5rem;
+    font: inherit;
+    font-weight: 700;
+    font-size: .62rem;
+    color: var(--ink);
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .text-size-btn.active {
     background: var(--accent);
     color: #fff;
     border-color: var(--accent);
@@ -1131,7 +1157,11 @@
     <span class="stat-pill">📖 <strong id="collectedCount">0</strong> / <strong id="statTotal">0</strong></span>
     <button type="button" class="zukan-btn" id="zukanBtn">📖 図鑑</button>
     <button type="button" class="zukan-btn" id="roomBtn">🏠 おへや</button>
-    <button type="button" class="zukan-btn" id="textSizeBtn" aria-label="文字を大きくする">🔤 文字</button>
+    <div class="text-size-group" id="textSizeGroup">
+      <button type="button" class="text-size-btn" data-size="large" title="文字を大きくする" aria-label="文字を大きくする">🔤 上</button>
+      <button type="button" class="text-size-btn" data-size="normal" title="文字をふつうの大きさにする" aria-label="文字をふつうの大きさにする">🔤 中</button>
+      <button type="button" class="text-size-btn" data-size="small" title="文字を小さくする" aria-label="文字を小さくする">🔤 下</button>
+    </div>
   </div>
 
   <div class="hud-corner">
@@ -1416,7 +1446,7 @@
   var roomCount = document.getElementById("roomCount");
   var roomClose = document.getElementById("roomClose");
   var roomSoundBtn = document.getElementById("roomSoundBtn");
-  var textSizeBtn = document.getElementById("textSizeBtn");
+  var textSizeGroup = document.getElementById("textSizeGroup");
   var roomPickBtn = document.getElementById("roomPickBtn");
   var coinValueEl = document.getElementById("coinValue");
   var shopCoinValueEl = document.getElementById("shopCoinValue");
@@ -1485,7 +1515,7 @@
   var rooms = [makeEmptyRoom(), makeEmptyRoom(), makeEmptyRoom()];
   var activeRoomIndex = 0;
   function currentRoom() { return rooms[activeRoomIndex]; }
-  var largeTextOn = false;
+  var textSize = "normal";
   var transitioning = false;
   var feedCooldown = false;
   var FEED_COOLDOWN_MS = 350;
@@ -1514,7 +1544,7 @@
         rooms: rooms,
         activeRoomIndex: activeRoomIndex,
         roomSoundOn: roomSoundOn,
-        largeTextOn: largeTextOn
+        textSize: textSize
       }));
     } catch (err) {}
   }
@@ -1560,7 +1590,11 @@
         ? data.activeRoomIndex : 0;
 
       roomSoundOn = !!data.roomSoundOn;
-      largeTextOn = !!data.largeTextOn;
+      if (data.textSize === "large" || data.textSize === "normal" || data.textSize === "small") {
+        textSize = data.textSize;
+      } else if (data.largeTextOn) {
+        textSize = "large";
+      }
       return true;
     } catch (err) {
       return false;
@@ -1843,9 +1877,11 @@
   }
 
   function applyTextSize() {
-    document.documentElement.setAttribute("data-textsize", largeTextOn ? "large" : "normal");
-    textSizeBtn.classList.toggle("active", largeTextOn);
-    textSizeBtn.setAttribute("aria-label", largeTextOn ? "文字を もとの おおきさに もどす" : "文字を大きくする");
+    document.documentElement.setAttribute("data-textsize", textSize);
+    var btns = textSizeGroup.querySelectorAll(".text-size-btn");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.toggle("active", btns[i].getAttribute("data-size") === textSize);
+    }
   }
 
   function spawnFlyingFood(emoji) {
@@ -2566,10 +2602,12 @@
     }
     saveState();
   });
-  textSizeBtn.addEventListener("click", function () {
-    largeTextOn = !largeTextOn;
-    applyTextSize();
-    saveState();
+  textSizeGroup.querySelectorAll(".text-size-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      textSize = btn.getAttribute("data-size");
+      applyTextSize();
+      saveState();
+    });
   });
   roomPickBtn.addEventListener("click", function () {
     roomOverlay.hidden = true;
