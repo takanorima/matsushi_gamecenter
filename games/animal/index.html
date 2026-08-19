@@ -628,6 +628,32 @@
     font-size: .8rem;
     color: var(--ink-soft);
   }
+  .badge-row {
+    display: flex;
+    gap: .4rem;
+    flex-wrap: wrap;
+    margin: 0 0 .7rem;
+  }
+  .badge-pill {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+    background: var(--sub);
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    padding: .2rem .55rem;
+    font-size: .7rem;
+    font-weight: 700;
+    color: var(--ink-soft);
+  }
+  .badge-pill.earned {
+    background: linear-gradient(180deg, #ffe9b0, #ffcf6b);
+    border-color: #e0a92e;
+    color: #6b4a00;
+  }
+  .badge-pill .badge-emoji {
+    font-size: .95rem;
+  }
 
   .room-tabs {
     display: flex;
@@ -1097,6 +1123,7 @@
       <button type="button" class="zukan-close" id="zukanClose" aria-label="とじる">✕</button>
     </div>
     <p class="zukan-hint">集めた どうぶつを タップすると、おへやに よんだり かえしたり できるよ(<span style="color:var(--accent)">★</span> = おへやに いる)</p>
+    <div class="badge-row" id="badgeRow"></div>
     <div class="zukan-grid" id="zukanGrid"></div>
   </div>
 </div>
@@ -1301,6 +1328,7 @@
   var restartBtn = document.getElementById("restartBtn");
   var zukanOverlay = document.getElementById("zukanOverlay");
   var zukanGrid = document.getElementById("zukanGrid");
+  var badgeRow = document.getElementById("badgeRow");
   var zukanCount = document.getElementById("zukanCount");
   var zukanClose = document.getElementById("zukanClose");
   var roomBtn = document.getElementById("roomBtn");
@@ -1355,6 +1383,15 @@
   var DECO_MIN_SCALE = .5;
   var DECO_MAX_SCALE = 2.5;
   var wishes = {};
+  var badges = {};
+  var BADGE_MILESTONES = [
+    { count: 5, coins: 10, e: "🥉", label: "はじめの一歩" },
+    { count: 10, coins: 15, e: "🥈", label: "なかよし" },
+    { count: 25, coins: 30, e: "🥇", label: "コレクター" },
+    { count: 50, coins: 50, e: "🏆", label: "大コレクター" },
+    { count: 75, coins: 70, e: "💎", label: "たんけんか" },
+    { count: 100, coins: 100, e: "👑", label: "レジェンド" }
+  ];
   var ROOM_THEMES = [
     { id: "meadow", cls: "", label: "🌳 はらっぱ" },
     { id: "sea", cls: "theme-sea", label: "🌊 うみ" },
@@ -1389,6 +1426,7 @@
         decorations: decorations,
         nextPlacementId: nextPlacementId,
         wishes: wishes,
+        badges: badges,
         rooms: rooms,
         activeRoomIndex: activeRoomIndex,
         roomSoundOn: roomSoundOn,
@@ -1418,6 +1456,7 @@
       decorations = data.decorations || {};
       nextPlacementId = data.nextPlacementId || 1;
       wishes = data.wishes || {};
+      badges = data.badges || {};
 
       if (Array.isArray(data.rooms) && data.rooms.length > 0) {
         rooms = [];
@@ -1822,10 +1861,19 @@
       playCollectFlyAnimation(ANIMALS[currentIndex].e);
 
       var wasNew = currentIsNew;
+      var earnedBadge = null;
       if (wasNew) {
         collected[currentIndex] = true;
         collectedCount++;
         coins += COINS_PER_NEW_ANIMAL;
+        for (var bm = 0; bm < BADGE_MILESTONES.length; bm++) {
+          var milestone = BADGE_MILESTONES[bm];
+          if (collectedCount === milestone.count && !badges[milestone.count]) {
+            badges[milestone.count] = true;
+            coins += milestone.coins;
+            earnedBadge = milestone;
+          }
+        }
         updateCoinDisplays();
       }
       level++;
@@ -1848,7 +1896,14 @@
       if (unlockedFood) {
         toastText += "<br>" + unlockedFood.e + " " + unlockedFood.n + " が つかえるように!";
       }
-      showToast(toastText);
+      if (earnedBadge) {
+        toastText += "<br><strong>" + earnedBadge.e + " " + earnedBadge.label + " バッジ かくとく!</strong>" +
+          "<br>🪙 +" + earnedBadge.coins + " ボーナス!";
+        showToast(toastText);
+        spawnConfetti();
+      } else {
+        showToast(toastText);
+      }
 
       render();
       progressFill.style.width = "100%";
@@ -1875,8 +1930,20 @@
     renderZukan();
   }
 
+  function renderBadgeRow() {
+    var html = "";
+    for (var i = 0; i < BADGE_MILESTONES.length; i++) {
+      var m = BADGE_MILESTONES[i];
+      var earned = !!badges[m.count];
+      html += '<span class="badge-pill' + (earned ? " earned" : "") + '" title="' + m.count + 'しゅるい あつめると かくとく">' +
+        '<span class="badge-emoji">' + (earned ? m.e : "🔒") + '</span>' + m.count + '</span>';
+    }
+    badgeRow.innerHTML = html;
+  }
+
   function renderZukan() {
     zukanCount.textContent = collectedCount + " / " + ANIMALS.length + " しゅうしゅう";
+    renderBadgeRow();
     var html = "";
     for (var i = 0; i < ANIMALS.length; i++) {
       if (collected[i]) {
@@ -2313,6 +2380,7 @@
     nextPlacementId = 1;
     selectedDecoPid = null;
     wishes = {};
+    badges = {};
     rooms = [makeEmptyRoom(), makeEmptyRoom(), makeEmptyRoom()];
     activeRoomIndex = 0;
     updateCoinDisplays();
