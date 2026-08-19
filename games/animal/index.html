@@ -29,6 +29,22 @@
   :root[data-textsize="large"] { --text-scale: 1.25; }
   :root[data-textsize="small"] { --text-scale: .85; }
 
+  :root[data-season="summer"] {
+    --sky: #a8ddff;
+    --grass: #7bd45c;
+    --grass-deep: #4fae3a;
+  }
+  :root[data-season="autumn"] {
+    --sky: #ffe0b8;
+    --grass: #e0b96b;
+    --grass-deep: #c28f3f;
+  }
+  :root[data-season="winter"] {
+    --sky: #eaf4ff;
+    --grass: #f3f7f5;
+    --grass-deep: #cfe0da;
+  }
+
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --main: #4d6bb0;
@@ -48,6 +64,21 @@
       --grass: #234b32;
       --grass-deep: #1a3a26;
     }
+    :root:not([data-theme="light"])[data-season="summer"] {
+      --sky: #1a3a5c;
+      --grass: #1f4a24;
+      --grass-deep: #163a1a;
+    }
+    :root:not([data-theme="light"])[data-season="autumn"] {
+      --sky: #3a2a1a;
+      --grass: #4a3a1f;
+      --grass-deep: #382b16;
+    }
+    :root:not([data-theme="light"])[data-season="winter"] {
+      --sky: #1c2a3f;
+      --grass: #33403d;
+      --grass-deep: #26302d;
+    }
   }
   :root[data-theme="dark"] {
     --main: #4d6bb0;
@@ -66,6 +97,21 @@
     --sky-deep: #1a2842;
     --grass: #234b32;
     --grass-deep: #1a3a26;
+  }
+  :root[data-theme="dark"][data-season="summer"] {
+    --sky: #1a3a5c;
+    --grass: #1f4a24;
+    --grass-deep: #163a1a;
+  }
+  :root[data-theme="dark"][data-season="autumn"] {
+    --sky: #3a2a1a;
+    --grass: #4a3a1f;
+    --grass-deep: #382b16;
+  }
+  :root[data-theme="dark"][data-season="winter"] {
+    --sky: #1c2a3f;
+    --grass: #33403d;
+    --grass-deep: #26302d;
   }
 
   * { box-sizing: border-box; }
@@ -205,6 +251,42 @@
     color: #fff;
     border-color: var(--accent);
   }
+  .season-wrap {
+    position: relative;
+    flex: none;
+  }
+  .season-group {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    padding: .35rem;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .18);
+    z-index: 15;
+  }
+  .season-group[hidden] { display: none; }
+  .season-btn {
+    flex: none;
+    white-space: nowrap;
+    background: var(--sub);
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    padding: .18rem .6rem;
+    font: inherit;
+    font-weight: 700;
+    font-size: .72rem;
+    color: var(--ink);
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .season-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
 
   .card {
     position: relative;
@@ -300,6 +382,12 @@
     right: .6rem;
     font-size: 1.1rem;
     line-height: 1;
+    pointer-events: none;
+  }
+  .stage-flowers,
+  .room-flowers {
+    position: absolute;
+    inset: 0;
     pointer-events: none;
   }
   .stage-flower {
@@ -1196,12 +1284,21 @@
     <div class="text-size-wrap" id="textSizeWrap">
       <button type="button" class="zukan-btn" id="textSizeToggleBtn">🔤 文字</button>
     </div>
+    <div class="season-wrap" id="seasonWrap">
+      <button type="button" class="zukan-btn" id="seasonToggleBtn">🌸 季節</button>
+    </div>
   </div>
 
   <div class="text-size-group" id="textSizeGroup" hidden>
     <button type="button" class="text-size-btn" data-size="large" title="文字を大きくする" aria-label="文字を大きくする">🔤 大</button>
     <button type="button" class="text-size-btn" data-size="normal" title="文字をふつうの大きさにする" aria-label="文字をふつうの大きさにする">🔤 中</button>
     <button type="button" class="text-size-btn" data-size="small" title="文字を小さくする" aria-label="文字を小さくする">🔤 小</button>
+  </div>
+  <div class="season-group" id="seasonGroup" hidden>
+    <button type="button" class="season-btn" data-season="spring" title="春にする" aria-label="春にする">🌸 春</button>
+    <button type="button" class="season-btn" data-season="summer" title="夏にする" aria-label="夏にする">☀️ 夏</button>
+    <button type="button" class="season-btn" data-season="autumn" title="秋にする" aria-label="秋にする">🍁 秋</button>
+    <button type="button" class="season-btn" data-season="winter" title="冬にする" aria-label="冬にする">❄️ 冬</button>
   </div>
 
   <div class="hud-corner">
@@ -1213,11 +1310,7 @@
     <div class="new-badge" id="newBadge" hidden>NEW!</div>
     <p class="stage-name" id="stageName"></p>
     <div class="animal-stage" id="animalStage">
-      <span class="stage-flower" style="left:14%;">🌼</span>
-      <span class="stage-flower" style="left:32%;">🌸</span>
-      <span class="stage-flower" style="left:61%;">🌼</span>
-      <span class="stage-flower" style="left:78%;">🌸</span>
-      <span class="stage-flower" style="left:90%;">🌼</span>
+      <div class="stage-flowers" id="stageFlowers"></div>
       <div class="animal-walk" id="animalWalk">
         <div class="animal-bob" id="animalBob">
           <span class="animal" id="animalEmoji"></span>
@@ -1282,13 +1375,7 @@
     <div class="room-tabs" id="roomTabs"></div>
     <p class="room-shop-label">かざりは ドラッグで すきな ばしょに うごかせるよ</p>
     <div class="room-scene" id="roomScene">
-      <span class="room-flower" style="left:6%;">🌼</span>
-      <span class="room-flower" style="left:19%;">🌸</span>
-      <span class="room-flower" style="left:34%;">🌼</span>
-      <span class="room-flower" style="left:48%;">🌸</span>
-      <span class="room-flower" style="left:63%;">🌼</span>
-      <span class="room-flower" style="left:77%;">🌸</span>
-      <span class="room-flower" style="left:91%;">🌼</span>
+      <div class="room-flowers" id="roomFlowers"></div>
       <div class="room-clouds" id="roomClouds" aria-hidden="true"></div>
       <div class="room-theme-fx" id="roomThemeFx" aria-hidden="true"></div>
       <div class="room-weather" id="roomWeather" aria-hidden="true"></div>
@@ -1501,6 +1588,11 @@
   var textSizeWrap = document.getElementById("textSizeWrap");
   var textSizeToggleBtn = document.getElementById("textSizeToggleBtn");
   var textSizeGroup = document.getElementById("textSizeGroup");
+  var seasonWrap = document.getElementById("seasonWrap");
+  var seasonToggleBtn = document.getElementById("seasonToggleBtn");
+  var seasonGroup = document.getElementById("seasonGroup");
+  var stageFlowersEl = document.getElementById("stageFlowers");
+  var roomFlowersEl = document.getElementById("roomFlowers");
   var roomPickBtn = document.getElementById("roomPickBtn");
   var coinValueEl = document.getElementById("coinValue");
   var shopCoinValueEl = document.getElementById("shopCoinValue");
@@ -1565,6 +1657,19 @@
     { id: "sea", cls: "theme-sea", label: "🌊 うみ" },
     { id: "snow", cls: "theme-snow", label: "❄️ ゆき" }
   ];
+  var SEASONS = [
+    { id: "spring", flowers: ["🌼", "🌸"], particle: "🌸" },
+    { id: "summer", flowers: ["🌻", "🌼"], particle: null },
+    { id: "autumn", flowers: ["🍂", "🍁"], particle: "🍂" },
+    { id: "winter", flowers: [], particle: "❄️" }
+  ];
+  function getSeason(id) {
+    for (var i = 0; i < SEASONS.length; i++) {
+      if (SEASONS[i].id === id) return SEASONS[i];
+    }
+    return SEASONS[0];
+  }
+  var season = "spring";
   function makeEmptyRoom() { return { members: {}, decorationPlacements: [] }; }
   var rooms = [makeEmptyRoom(), makeEmptyRoom(), makeEmptyRoom()];
   var activeRoomIndex = 0;
@@ -1598,7 +1703,8 @@
         rooms: rooms,
         activeRoomIndex: activeRoomIndex,
         roomSoundOn: roomSoundOn,
-        textSize: textSize
+        textSize: textSize,
+        season: season
       }));
     } catch (err) {}
   }
@@ -1648,6 +1754,9 @@
         textSize = data.textSize;
       } else if (data.largeTextOn) {
         textSize = "large";
+      }
+      if (data.season === "spring" || data.season === "summer" || data.season === "autumn" || data.season === "winter") {
+        season = data.season;
       }
       return true;
     } catch (err) {
@@ -1936,6 +2045,36 @@
     for (var i = 0; i < btns.length; i++) {
       btns[i].classList.toggle("active", btns[i].getAttribute("data-size") === textSize);
     }
+  }
+
+  function renderSeasonFlowers() {
+    var flowers = getSeason(season).flowers;
+    var stagePositions = [14, 32, 61, 78, 90];
+    var roomPositions = [6, 19, 34, 48, 63, 77, 91];
+    var stageHtml = "";
+    for (var i = 0; i < stagePositions.length; i++) {
+      if (!flowers.length) break;
+      stageHtml += '<span class="stage-flower" style="left:' + stagePositions[i] + '%;">' +
+        flowers[i % flowers.length] + '</span>';
+    }
+    stageFlowersEl.innerHTML = stageHtml;
+    var roomHtml = "";
+    for (var j = 0; j < roomPositions.length; j++) {
+      if (!flowers.length) break;
+      roomHtml += '<span class="room-flower" style="left:' + roomPositions[j] + '%;">' +
+        flowers[j % flowers.length] + '</span>';
+    }
+    roomFlowersEl.innerHTML = roomHtml;
+  }
+
+  function applySeason() {
+    document.documentElement.setAttribute("data-season", season);
+    var btns = seasonGroup.querySelectorAll(".season-btn");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.toggle("active", btns[i].getAttribute("data-season") === season);
+    }
+    renderSeasonFlowers();
+    renderThemeFx();
   }
 
   function spawnFlyingFood(emoji) {
@@ -2359,6 +2498,20 @@
         html += '<span class="room-fish" style="top:' + fish[f].top + '%; animation-duration:' +
           fish[f].duration + 's; animation-delay:' + fish[f].delay + 's;">' + fish[f].e + '</span>';
       }
+    } else if (theme === "meadow") {
+      var particle = getSeason(season).particle;
+      if (particle) {
+        var bits = [
+          { left: 10, duration: 6, delay: 0 },
+          { left: 34, duration: 7.5, delay: -3 },
+          { left: 58, duration: 6.5, delay: -5 },
+          { left: 82, duration: 8, delay: -2 }
+        ];
+        for (var p = 0; p < bits.length; p++) {
+          html += '<span class="room-snowflake" style="left:' + bits[p].left + '%; animation-duration:' +
+            bits[p].duration + 's; animation-delay:' + bits[p].delay + 's;">' + particle + '</span>';
+        }
+      }
     }
     roomThemeFxEl.innerHTML = html;
   }
@@ -2678,6 +2831,28 @@
       textSizeGroup.hidden = true;
     }
   });
+  seasonToggleBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    if (seasonGroup.hidden) {
+      var seasonRect = seasonToggleBtn.getBoundingClientRect();
+      seasonGroup.style.left = seasonRect.left + "px";
+      seasonGroup.style.top = (seasonRect.bottom + 6) + "px";
+    }
+    seasonGroup.hidden = !seasonGroup.hidden;
+  });
+  seasonGroup.querySelectorAll(".season-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      season = btn.getAttribute("data-season");
+      applySeason();
+      saveState();
+      seasonGroup.hidden = true;
+    });
+  });
+  document.addEventListener("click", function (e) {
+    if (!seasonGroup.hidden && !seasonWrap.contains(e.target) && !seasonGroup.contains(e.target)) {
+      seasonGroup.hidden = true;
+    }
+  });
   roomPickBtn.addEventListener("click", function () {
     roomOverlay.hidden = true;
     stopRoomAmbience();
@@ -2789,6 +2964,7 @@
   updateCoinDisplays();
   updateRoomSoundBtn();
   applyTextSize();
+  applySeason();
   render();
 
   if (loaded) {
