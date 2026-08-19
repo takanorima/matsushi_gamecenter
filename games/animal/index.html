@@ -262,7 +262,13 @@
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
+    color: var(--grass-deep);
     background:
+      radial-gradient(circle at 15% 88%, #fff6d6 2.6%, transparent 3.2%),
+      radial-gradient(circle at 33% 93%, #ffd3ec 2.2%, transparent 2.8%),
+      radial-gradient(circle at 62% 90%, #fff6d6 2.4%, transparent 3%),
+      radial-gradient(circle at 79% 94%, #ffd3ec 2%, transparent 2.6%),
+      radial-gradient(circle at 91% 87%, #fff6d6 2.2%, transparent 2.8%),
       radial-gradient(circle at 10% 80%, var(--grass-deep) 5%, transparent 6%),
       radial-gradient(circle at 24% 90%, var(--grass-deep) 4%, transparent 5%),
       radial-gradient(circle at 40% 78%, var(--grass-deep) 5%, transparent 6%),
@@ -281,13 +287,12 @@
     left: 0;
     right: 0;
     top: 35%;
-    height: .85rem;
-    transform: translateY(-62%);
-    background:
-      linear-gradient(135deg, var(--grass-deep) 25%, transparent 25%) 0 0,
-      linear-gradient(225deg, var(--grass-deep) 25%, transparent 25%) 0 0;
-    background-size: .42rem .42rem;
+    height: 1.3rem;
+    transform: translateY(-72%);
+    background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2740%27%20height%3D%2722%27%20viewBox%3D%270%200%2040%2022%27%3E%3Cpath%20d%3D%27M4%2022Q4%2012%202%206Q6%2012%206%2022Z%27%20fill%3D%27currentColor%27/%3E%3Cpath%20d%3D%27M13%2022Q14%2010%2011%205Q17%2011%2016%2022Z%27%20fill%3D%27currentColor%27/%3E%3Cpath%20d%3D%27M23%2022Q23%2013%2021%208Q26%2013%2026%2022Z%27%20fill%3D%27currentColor%27/%3E%3Cpath%20d%3D%27M33%2022Q34%2011%2031%206Q37%2012%2036%2022Z%27%20fill%3D%27currentColor%27/%3E%3C/svg%3E");
+    background-size: 2.2rem 1.2rem;
     background-repeat: repeat-x;
+    background-position: bottom;
     pointer-events: none;
   }
   .animal-stage::after {
@@ -770,7 +775,25 @@
     overflow-y: hidden;
     border-radius: 14px;
     padding: .5rem .75rem;
+    color: var(--grass-deep);
     background:
+      radial-gradient(circle at 8% 85%, var(--grass-deep) 4%, transparent 5%),
+      radial-gradient(circle at 22% 92%, var(--grass-deep) 3%, transparent 4%),
+      radial-gradient(circle at 38% 84%, var(--grass-deep) 4%, transparent 5%),
+      radial-gradient(circle at 55% 93%, var(--grass-deep) 3%, transparent 4%),
+      radial-gradient(circle at 70% 85%, var(--grass-deep) 4%, transparent 5%),
+      radial-gradient(circle at 85% 92%, var(--grass-deep) 3%, transparent 4%),
+      radial-gradient(circle at 96% 84%, var(--grass-deep) 4%, transparent 5%),
+      linear-gradient(var(--sky), var(--sky) 62%, var(--grass) 62%, var(--grass-deep));
+  }
+  .room-scene:not(.theme-sea):not(.theme-snow) {
+    background:
+      radial-gradient(circle at 12% 78%, #fff6d6 2%, transparent 2.5%),
+      radial-gradient(circle at 28% 90%, #ffd3ec 1.7%, transparent 2.2%),
+      radial-gradient(circle at 47% 82%, #fff6d6 1.9%, transparent 2.4%),
+      radial-gradient(circle at 63% 91%, #ffd3ec 1.6%, transparent 2.1%),
+      radial-gradient(circle at 78% 80%, #fff6d6 1.9%, transparent 2.4%),
+      radial-gradient(circle at 92% 90%, #ffd3ec 1.7%, transparent 2.2%),
       radial-gradient(circle at 8% 85%, var(--grass-deep) 4%, transparent 5%),
       radial-gradient(circle at 22% 92%, var(--grass-deep) 3%, transparent 4%),
       radial-gradient(circle at 38% 84%, var(--grass-deep) 4%, transparent 5%),
@@ -786,13 +809,12 @@
     left: 0;
     right: 0;
     top: 62%;
-    height: .85rem;
-    transform: translateY(-62%);
-    background:
-      linear-gradient(135deg, var(--grass-deep) 25%, transparent 25%) 0 0,
-      linear-gradient(225deg, var(--grass-deep) 25%, transparent 25%) 0 0;
-    background-size: .42rem .42rem;
+    height: 1.3rem;
+    transform: translateY(-72%);
+    background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20width%3D%2740%27%20height%3D%2722%27%20viewBox%3D%270%200%2040%2022%27%3E%3Cpath%20d%3D%27M4%2022Q4%2012%202%206Q6%2012%206%2022Z%27%20fill%3D%27currentColor%27/%3E%3Cpath%20d%3D%27M13%2022Q14%2010%2011%205Q17%2011%2016%2022Z%27%20fill%3D%27currentColor%27/%3E%3Cpath%20d%3D%27M23%2022Q23%2013%2021%208Q26%2013%2026%2022Z%27%20fill%3D%27currentColor%27/%3E%3Cpath%20d%3D%27M33%2022Q34%2011%2031%206Q37%2012%2036%2022Z%27%20fill%3D%27currentColor%27/%3E%3C/svg%3E");
+    background-size: 2.2rem 1.2rem;
     background-repeat: repeat-x;
+    background-position: bottom;
     pointer-events: none;
   }
   .room-scene.theme-sea::before {
