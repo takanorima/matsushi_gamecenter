@@ -1637,6 +1637,7 @@
   }
 
   function getSelectedFoodEmoji() {
+    if (selectedFoodIndex === -1) return null;
     var foods = unlockedFoods();
     if (selectedFoodIndex >= foods.length) selectedFoodIndex = foods.length - 1;
     if (selectedFoodIndex < 0) selectedFoodIndex = 0;
@@ -1647,6 +1648,22 @@
     var foods = unlockedFoods();
     if (selectedFoodIndex >= foods.length) selectedFoodIndex = foods.length - 1;
     foodRow.innerHTML = "";
+
+    var emptyBtn = document.createElement("button");
+    emptyBtn.type = "button";
+    emptyBtn.className = "food-btn" + (selectedFoodIndex === -1 ? " selected" : "");
+    emptyBtn.textContent = "✋";
+    emptyBtn.title = "なにも もたない";
+    emptyBtn.setAttribute("aria-label", "なにも もたない");
+    emptyBtn.setAttribute("aria-pressed", selectedFoodIndex === -1 ? "true" : "false");
+    emptyBtn.disabled = cleared;
+    emptyBtn.addEventListener("click", function () {
+      selectedFoodIndex = -1;
+      renderFoodRow();
+      saveState();
+    });
+    foodRow.appendChild(emptyBtn);
+
     for (var i = 0; i < foods.length; i++) {
       (function (food, idx) {
         var btn = document.createElement("button");
@@ -1660,6 +1677,7 @@
         btn.addEventListener("click", function () {
           selectedFoodIndex = idx;
           renderFoodRow();
+          saveState();
         });
         foodRow.appendChild(btn);
       })(foods[i], i);
@@ -1915,7 +1933,7 @@
   }
 
   function feed(foodEmoji) {
-    if (cleared || transitioning || feedCooldown) return;
+    if (!foodEmoji || cleared || transitioning || feedCooldown) return;
 
     feedCooldown = true;
     setTimeout(function () {
@@ -2587,7 +2605,7 @@
   animalStageEl.addEventListener("mousemove", function (e) {
     if (!canFeedNow()) { foodCursorEl.hidden = true; return; }
     foodCursorEl.hidden = false;
-    foodCursorEl.textContent = getSelectedFoodEmoji();
+    foodCursorEl.textContent = getSelectedFoodEmoji() || "✋";
     foodCursorEl.style.left = e.clientX + "px";
     foodCursorEl.style.top = e.clientY + "px";
 
