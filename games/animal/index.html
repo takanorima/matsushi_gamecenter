@@ -499,6 +499,7 @@
     z-index: 30;
   }
   .clear-overlay[hidden], .zukan-overlay[hidden] { display: none; }
+  #startOverlay { z-index: 40; }
   .clear-card {
     background: var(--surface);
     border-radius: 22px;
@@ -1098,6 +1099,16 @@
 </style>
 </head>
 <body>
+<div class="clear-overlay" id="startOverlay">
+  <div class="clear-card">
+    <p class="clear-emoji">🐾</p>
+    <h2>動物育成ゲーム</h2>
+    <p>えさをあげて、どうぶつを あつめよう!</p>
+    <button type="button" class="feed-btn" id="startNewBtn" style="margin-bottom:.6rem;">🆕 さいしょから</button>
+    <button type="button" class="feed-btn" id="startContinueBtn" hidden>▶️ つづきから<br><span class="clear-stats" id="startContinueInfo"></span></button>
+  </div>
+</div>
+
 <div class="page">
   <header class="top">
     <p class="eyebrow">🎮 まつしげーむせんたー</p>
@@ -1373,6 +1384,10 @@
   var clearOverlay = document.getElementById("clearOverlay");
   var clearStatsEl = document.getElementById("clearStats");
   var restartBtn = document.getElementById("restartBtn");
+  var startOverlay = document.getElementById("startOverlay");
+  var startNewBtn = document.getElementById("startNewBtn");
+  var startContinueBtn = document.getElementById("startContinueBtn");
+  var startContinueInfo = document.getElementById("startContinueInfo");
   var zukanOverlay = document.getElementById("zukanOverlay");
   var zukanGrid = document.getElementById("zukanGrid");
   var badgeRow = document.getElementById("badgeRow");
@@ -2531,7 +2546,7 @@
   restartBtn.addEventListener("click", reset);
 
   function canFeedNow() {
-    return !(cleared || zukanOverlay.hidden === false || roomOverlay.hidden === false);
+    return !(cleared || zukanOverlay.hidden === false || roomOverlay.hidden === false || startOverlay.hidden === false);
   }
 
   window.addEventListener("keydown", function (e) {
@@ -2622,6 +2637,18 @@
   updateRoomSoundBtn();
   applyTextSize();
   render();
+
+  if (loaded) {
+    startContinueInfo.textContent = "Lv." + level + " / " + collectedCount + "しゅるい あつめた";
+    startContinueBtn.hidden = false;
+  }
+  startNewBtn.addEventListener("click", function () {
+    reset();
+    startOverlay.hidden = true;
+  });
+  startContinueBtn.addEventListener("click", function () {
+    startOverlay.hidden = true;
+  });
 })();
 </script>
 </body>
