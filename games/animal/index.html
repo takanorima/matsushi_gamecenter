@@ -24,7 +24,10 @@
     --grass: #c3edc7;
     --grass-deep: #9fd9a6;
     --font-body: "Hiragino Maru Gothic ProN", "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic Medium", "Yu Gothic", "Noto Sans JP", "Meiryo", sans-serif;
+    --text-scale: 1;
   }
+  :root[data-textsize="large"] { --text-scale: 1.25; }
+  :root[data-textsize="small"] { --text-scale: .85; }
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -67,8 +70,6 @@
 
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
-  html[data-textsize="large"] { font-size: 125%; }
-  html[data-textsize="small"] { font-size: 85%; }
   body {
     background:
       linear-gradient(var(--paper-line) 1px, transparent 1px) 0 0 / 28px 28px,
@@ -92,22 +93,22 @@
   }
   .eyebrow {
     margin: 0 0 .2rem;
-    font-size: .8rem;
+    font-size: calc(.8rem * var(--text-scale));
     letter-spacing: .04em;
     color: var(--ink-soft);
   }
   h1 {
     margin: 0;
-    font-size: 1.6rem;
+    font-size: calc(1.6rem * var(--text-scale));
   }
   .credit {
     margin: .3rem 0 0;
-    font-size: .85rem;
+    font-size: calc(.85rem * var(--text-scale));
     color: var(--ink-soft);
   }
   .goal {
     margin: .35rem 0 0;
-    font-size: .85rem;
+    font-size: calc(.85rem * var(--text-scale));
     color: var(--ink-faint);
   }
 
@@ -129,13 +130,13 @@
     border: 1px solid var(--border);
     border-radius: 999px;
     padding: .3rem .6rem;
-    font-size: .78rem;
+    font-size: calc(.78rem * var(--text-scale));
     font-weight: 700;
     color: var(--ink-soft);
   }
   .stat-pill strong {
     color: var(--ink);
-    font-size: .95rem;
+    font-size: calc(.95rem * var(--text-scale));
   }
   .hud-corner {
     position: fixed;
@@ -158,7 +159,7 @@
     padding: .3rem .65rem;
     font: inherit;
     font-weight: 700;
-    font-size: .78rem;
+    font-size: calc(.78rem * var(--text-scale));
     color: var(--ink);
     cursor: pointer;
     touch-action: manipulation;
@@ -194,7 +195,7 @@
     padding: .18rem .6rem;
     font: inherit;
     font-weight: 700;
-    font-size: .72rem;
+    font-size: calc(.72rem * var(--text-scale));
     color: var(--ink);
     cursor: pointer;
     touch-action: manipulation;
@@ -224,7 +225,7 @@
     background: var(--accent);
     color: #fff;
     font-weight: 800;
-    font-size: .8rem;
+    font-size: calc(.8rem * var(--text-scale));
     padding: .25rem .7rem;
     border-radius: 8px;
     letter-spacing: .05em;
@@ -238,7 +239,7 @@
   }
 
   .stage-name {
-    font-size: 1.05rem;
+    font-size: calc(1.05rem * var(--text-scale));
     font-weight: 700;
     color: var(--ink-soft);
   }
@@ -400,12 +401,12 @@
 
   .progress-label {
     margin: 0 0 .45rem;
-    font-size: .95rem;
+    font-size: calc(.95rem * var(--text-scale));
     color: var(--ink-soft);
   }
   .progress-label strong {
     color: var(--ink);
-    font-size: 1.1rem;
+    font-size: calc(1.1rem * var(--text-scale));
   }
   .progress-bar {
     height: .8rem;
@@ -424,13 +425,13 @@
 
   .total-feeds {
     margin: .9rem 0 0;
-    font-size: .85rem;
+    font-size: calc(.85rem * var(--text-scale));
     color: var(--ink-faint);
   }
 
   .food-row-label {
     margin: 1.1rem 0 .4rem;
-    font-size: .8rem;
+    font-size: calc(.8rem * var(--text-scale));
     color: var(--ink-faint);
   }
   .food-row {
@@ -498,7 +499,7 @@
   }
   .a-btn-caption {
     margin: .5rem 0 0;
-    font-size: .8rem;
+    font-size: calc(.8rem * var(--text-scale));
     color: var(--ink-faint);
   }
 
@@ -512,7 +513,7 @@
     border-radius: 14px;
     padding: .55rem 1rem;
     font-weight: 700;
-    font-size: .95rem;
+    font-size: calc(.95rem * var(--text-scale));
     color: var(--accent);
     opacity: 0;
     pointer-events: none;
@@ -531,7 +532,7 @@
   footer.note {
     margin-top: 1rem;
     text-align: center;
-    font-size: .8rem;
+    font-size: calc(.8rem * var(--text-scale));
     color: var(--ink-faint);
   }
 
@@ -562,7 +563,7 @@
   }
   .clear-card h2 {
     margin: 0 0 .5rem;
-    font-size: 1.6rem;
+    font-size: calc(1.6rem * var(--text-scale));
   }
   .clear-card p {
     margin: 0 0 .5rem;
@@ -570,12 +571,12 @@
   }
   .clear-card .clear-stats {
     margin: 0 0 1.2rem;
-    font-size: .85rem;
+    font-size: calc(.85rem * var(--text-scale));
     color: var(--ink-faint);
   }
   .feed-btn {
     font: inherit;
-    font-size: 1.05rem;
+    font-size: calc(1.05rem * var(--text-scale));
     font-weight: 700;
     color: var(--main-ink);
     background: linear-gradient(180deg, var(--sub), var(--main));
@@ -606,11 +607,11 @@
   }
   .zukan-head h2 {
     margin: 0;
-    font-size: 1.15rem;
+    font-size: calc(1.15rem * var(--text-scale));
     white-space: nowrap;
   }
   .zukan-head span {
-    font-size: .85rem;
+    font-size: calc(.85rem * var(--text-scale));
     color: var(--ink-soft);
   }
   .zukan-close {
@@ -673,7 +674,7 @@
   }
   .zukan-hint {
     margin: 0 0 .6rem;
-    font-size: .8rem;
+    font-size: calc(.8rem * var(--text-scale));
     color: var(--ink-soft);
   }
   .badge-row {
@@ -690,7 +691,7 @@
     border: 1px solid var(--border-strong);
     border-radius: 999px;
     padding: .2rem .55rem;
-    font-size: .7rem;
+    font-size: calc(.7rem * var(--text-scale));
     font-weight: 700;
     color: var(--ink-soft);
   }
@@ -719,7 +720,7 @@
     padding: .3rem .65rem;
     font: inherit;
     font-weight: 700;
-    font-size: .78rem;
+    font-size: calc(.78rem * var(--text-scale));
     color: var(--ink);
     cursor: pointer;
     touch-action: manipulation;
@@ -1002,7 +1003,7 @@
     100% { opacity: 0; transform: translateX(-50%) translateY(-1.6rem) scale(1); }
   }
   .room-walker .room-name {
-    font-size: .58rem;
+    font-size: calc(.58rem * var(--text-scale));
     line-height: 1.8;
     color: var(--ink-soft);
     background: var(--room-name-bg, rgba(255, 255, 255, .75));
@@ -1061,7 +1062,7 @@
     text-align: center;
     color: var(--ink-soft);
     padding: 2.5rem 1rem;
-    font-size: .9rem;
+    font-size: calc(.9rem * var(--text-scale));
     text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
   }
 
@@ -1070,7 +1071,7 @@
   }
   .room-shop-label {
     margin: 0 0 .4rem;
-    font-size: .8rem;
+    font-size: calc(.8rem * var(--text-scale));
     color: var(--ink-soft);
   }
   .room-shop-row {
@@ -1106,12 +1107,12 @@
     line-height: 1;
   }
   .shop-btn .shop-cost {
-    font-size: .68rem;
+    font-size: calc(.68rem * var(--text-scale));
     font-weight: 700;
     color: var(--ink);
   }
   .shop-btn .shop-owned {
-    font-size: .62rem;
+    font-size: calc(.62rem * var(--text-scale));
     color: var(--ink-soft);
   }
 
