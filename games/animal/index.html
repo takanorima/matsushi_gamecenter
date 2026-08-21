@@ -696,6 +696,11 @@
     touch-action: manipulation;
     width: 100%;
   }
+  .feed-btn.danger {
+    background: linear-gradient(180deg, #ffb3b3, #e53935);
+    border-color: #e53935;
+    color: #fff;
+  }
 
   .zukan-card {
     background: var(--surface);
@@ -1288,6 +1293,16 @@
   </div>
 </div>
 
+<div class="clear-overlay" id="deleteConfirmOverlay" style="z-index:41;" hidden>
+  <div class="clear-card">
+    <p class="clear-emoji">🗑️</p>
+    <h2>本当に削除しますか？</h2>
+    <p>いままでの きろくが きえて、さいしょからに なるよ。</p>
+    <button type="button" class="feed-btn danger" id="deleteConfirmYesBtn" style="margin-bottom:.6rem;">🗑️ さくじょする</button>
+    <button type="button" class="feed-btn" id="deleteConfirmNoBtn">やめる</button>
+  </div>
+</div>
+
 <div class="page">
   <header class="top">
     <p class="eyebrow">🎮 まつしげーむせんたー</p>
@@ -1587,6 +1602,9 @@
   var startNewBtn = document.getElementById("startNewBtn");
   var startContinueBtn = document.getElementById("startContinueBtn");
   var startContinueInfo = document.getElementById("startContinueInfo");
+  var deleteConfirmOverlay = document.getElementById("deleteConfirmOverlay");
+  var deleteConfirmYesBtn = document.getElementById("deleteConfirmYesBtn");
+  var deleteConfirmNoBtn = document.getElementById("deleteConfirmNoBtn");
   var zukanOverlay = document.getElementById("zukanOverlay");
   var zukanGrid = document.getElementById("zukanGrid");
   var badgeRow = document.getElementById("badgeRow");
@@ -2991,7 +3009,8 @@
     startContinueBtn.hidden = false;
   }
   startNewBtn.addEventListener("click", function () {
-    if (loaded && !window.confirm("本当に削除しますか？\nいままでの きろくが きえて、さいしょからに なるよ。")) {
+    if (loaded) {
+      deleteConfirmOverlay.hidden = false;
       return;
     }
     reset();
@@ -2999,6 +3018,14 @@
   });
   startContinueBtn.addEventListener("click", function () {
     startOverlay.hidden = true;
+  });
+  deleteConfirmYesBtn.addEventListener("click", function () {
+    deleteConfirmOverlay.hidden = true;
+    reset();
+    startOverlay.hidden = true;
+  });
+  deleteConfirmNoBtn.addEventListener("click", function () {
+    deleteConfirmOverlay.hidden = true;
   });
 })();
 </script>
