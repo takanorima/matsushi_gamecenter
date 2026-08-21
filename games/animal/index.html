@@ -2991,6 +2991,9 @@
     startContinueBtn.hidden = false;
   }
   startNewBtn.addEventListener("click", function () {
+    if (loaded && !window.confirm("本当に削除しますか？\nいままでの きろくが きえて、さいしょからに なるよ。")) {
+      return;
+    }
     reset();
     startOverlay.hidden = true;
   });
