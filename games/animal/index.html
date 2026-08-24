@@ -702,6 +702,12 @@
     border-color: #e53935;
     color: #fff;
   }
+  .delete-warning {
+    margin: .5rem 0 .8rem;
+    font-size: calc(.8rem * var(--text-scale));
+    font-weight: 700;
+    color: #e53935;
+  }
 
   .zukan-card {
     background: var(--surface);
@@ -1301,6 +1307,7 @@
     <h2>本当に削除しますか？</h2>
     <p>いままでの きろくが きえて、さいしょからに なるよ。</p>
     <button type="button" class="feed-btn danger" id="deleteConfirmYesBtn" style="margin-bottom:.6rem;">🗑️ さくじょする</button>
+    <p class="delete-warning">本当に削除しますか？削除したら元通りにできません。</p>
     <button type="button" class="feed-btn" id="deleteConfirmNoBtn">やめる</button>
   </div>
 </div>
