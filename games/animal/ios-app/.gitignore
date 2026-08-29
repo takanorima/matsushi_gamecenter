@@ -1,0 +1,8 @@
+node_modules/
+ios/App/Pods/
+ios/App/Podfile.lock
+ios/App/build/
+ios/App/DerivedData/
+ios/.xcode.env.local
+*.xcuserstate
+xcuserdata/

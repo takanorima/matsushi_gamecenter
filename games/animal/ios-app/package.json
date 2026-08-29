@@ -1,0 +1,17 @@
+{
+  "name": "animal-game-ios",
+  "private": true,
+  "version": "1.0.0",
+  "description": "動物育成ゲーム(花乃子さん作)のiOSアプリ用ラッパー",
+  "scripts": {
+    "sync": "cap sync ios",
+    "open:ios": "cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.2.1",
+    "@capacitor/ios": "^6.2.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.1"
+  }
+}

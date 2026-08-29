@@ -1,0 +1,9 @@
+{
+  "appId": "com.matsushigamecenter.animalgame",
+  "appName": "どうぶつ育成ゲーム",
+  "webDir": "www",
+  "backgroundColor": "#a7c6ff",
+  "ios": {
+    "contentInset": "always"
+  }
+}
